@@ -1,0 +1,61 @@
+TESTING for bag module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+I created a test program file, bagtest.c, to test the 
+functionality of the bag module. I compiled this program
+with the inclusion of the bag module header file and 
+provided the module's object file (bag.o) to the linker. 
+
+Bag Module Tests:
+(module functionalities verified in bagtest program)
+   
+  Sequence 1:
+   > I tested creation of a new bag data structure with
+     a delete function that deletes statically-allocated
+     data, meaning that the delete function body is empty.
+
+   > I tested insertions into this bag structure
+
+   > I tested extractions from this bag structure, printing
+     the returned data to ensure that it matched what was
+     inserted initially
+
+   > I tested extraction from an empty bag structure and 
+     verified that the correct value was returned: a NULL
+     pointer
+
+   > I tested deletion of an empty bag structure that was 
+     created to hold statically allocated data
+
+  Sequence 2:
+   > I tested creation of a new bag data structure with
+     a delete function that deletes dynamically-allocated
+     data, meaning that the delete function frees the input
+     variable
+
+   > I tested insertion of dynamically-allocated strings
+     into this bag structure
+
+   > I tested extraction from this bag, verifying that the 
+   	 expected data was returned by printing the result
+
+   > I tested deletion of a non-empty bag that still held
+     dynamically allocated data, meaning that the delete 
+     function would have to be called to delete the data
+     contained within the bag
+
+  Sequence 3:
+   > I tested extraction from an invalid (NULL) bag
+     structure and verified that the correct value was
+     returned: a NULL pointer
+
+Error Statuses:
+  0 - success
+  1 - struct creation error
+
+Compilation of Test Program:
+(makefile included in module directory)
+
+    make
+

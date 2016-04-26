@@ -1,0 +1,84 @@
+TESTING for list module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+I created a test program file (listtest.c) to 
+test the functionality of the list module. I compiled
+this program by including the module header file and
+including the module object file (list.o) in the 
+linking process. 
+
+List Module Tests:
+(module functionalities verified in bagtest program)
+
+	Sequence 1:
+		> I tested the creation of a new list structure
+		  to hold statically-allocated user data
+
+		> I verified that creation of this new structure 
+		  was successful and printed the results
+
+		> I tested the insertion of new key/data pairs
+		  into the list structure, printing results to
+		  verify that the insertion was successful
+
+		> I tested the insertion of duplicate key/data
+		  pairs into the list structure, printing results
+		  to verify that the duplicate keys were not
+		  added to the list
+
+		> I tested the find function by searching for
+		  keys that I had previously inserted; I 
+		  printed results of these find commands to 
+		  verify that the given keys were found by the 
+		  command
+
+		> I tested the find function by searching for
+		  keys that had not been inserted; I verified
+		  that the function returned the expected value
+		  (null) by printing the results
+
+		> I tested deletion of the list structure and
+		  its contents when the user input data was 
+		  statically-allocated
+
+	Sequence 2:
+		> I tested the creation of a list to hold
+		  dynamically allocated user input data
+
+		> I verified that this creation was successful 
+		  by printing an error message and exiting in the
+		  event that the creation fails
+
+		> I tested list insertion with dynamically
+		  allocated data; I printed a message to stdout
+		  notifying users that insertion was successful
+
+		> I tested list finding with dynamically 
+		  allocated data by printing the results
+		  of the find function for keys that I had 
+		  previously inserted
+
+		> I tested list deletion on a list with
+		  dynamically allocated user input data; the 
+		  delete function in this case had an actual
+		  body that was responsible for freeing the 
+		  user input data
+
+	Sequence 3:
+		> I tested list insertion into an invalid 
+		  (null) list and printed results verifying
+		  that insertion fails in this instance
+
+Error Statuses:
+	0 - success
+	1 - structure creation error
+
+Compilation of Test Program:
+(makefile included in module directory)
+
+	make
+
+
+
+

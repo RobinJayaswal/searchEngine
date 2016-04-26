@@ -1,0 +1,54 @@
+README for counters module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+Overview:
+
+	The counters module allows users to count the 
+	frequency with which ints are inserted into the data 
+	strcuture. When a new integer is inserted, it is added 
+	with a count of 1. When an integer that already exists 
+	in the counters is added, its count is incremented.
+
+Exported Functions:
+
+	> counters_t *counters_new(void)
+		create a new counters structure
+
+	> void counters_add(counters_t *ctrs, int key)
+		add integer key to given counters structure
+		increment key's value if already exists
+
+	> int counters_get(counters_t *ctrs, int key)
+		return the value for given key
+
+	> void counters_delete(counters_t *ctrs)
+		delete the entire data structure
+
+	*see module header file for more information 
+
+Implementation:
+	The counters module is implemented as a 
+	singly-linked list. Insertion of new counters to
+	the existing structure occurs at the list head.
+
+Assumptions:
+	- the key provided to the counters add function
+	  must be of type int
+
+	- when the counters add function is invoked on
+	  an invalid (NULL) counters structure, the function
+	  returns no value, and no error message is thrown
+
+	- when the counters get function is invoked on
+	  and invalid (NULL) counters structure, 0 is
+	  returned rather than an error message
+
+	- it is the responsibility of the module user
+	  to ensure that 'dangling pointers' are attended
+	  to; the module delete function deletes the entire
+	  data structure as well as its contents, but does
+	  not change the value of the structure pointer
+
+Limitations:
+	no module limitations

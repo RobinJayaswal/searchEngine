@@ -1,0 +1,61 @@
+README for bag module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+Overview:
+
+	The bag module allows users to store arbitrary data
+	in a simple yet flexible data structure. 
+
+Exported Functions:
+
+	> bag_t* bag_new(void (*deletefunc)(void *data))
+		create a new bag structure 
+		specified delete function used to delete data
+
+	> void bag_insert(bag_t *bag, void *data)
+		insert new item with given data into bag
+
+	> void* bag_extract(bag_t *bag)
+		extract any item from the given bag
+
+	> void bag_delete(bag_t *bag)
+		delete the entire data structure
+
+	*see module header file for more information 
+
+Implementation:
+	A bag is implemented as a singly-linked list, where 
+	both insertions and extractions occur in LIFO order. 
+
+Assumptions:
+	- a bag accepts duplicates; an arbitrary
+	  number of items with identical data may
+	  be inserted into the bag
+
+	- it is the responsibility of the module user
+	  to supply a valid delete function to the 
+	  bag_new() function when creating a new bag
+
+	- the module is not responsible for determining
+	  if the user provided delete function is 
+	  actually capable of deleting the input data
+	  that the bag recieves
+
+	- the only delete function regarded as invalid
+	  by the module itself is a NULL pointer
+
+	- the module user is responsible for avoiding
+	  'dangling pointers' after deleting a bag structure;
+	  the module is not responsible for setting the 
+	  pointer to the bag structure to NULL after 
+	  deletion of the bag
+
+Limitations:
+	- specified elements cannot be extracted from
+	  the bag, the last item inserted is always
+	  the next item removed
+
+	- items are indistinguishable before extraction,
+	  no key is available within a bagitem to
+	  differentiate it from another 

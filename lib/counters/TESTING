@@ -1,0 +1,54 @@
+TESTING for 'counters' module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+I wrote a testing program file, counterstest.c, 
+to verify the functionality of the counters module. 
+I compiled this test program by including the header 
+file for the counters module and including the module 
+object file (counters.o) in the linking process.
+
+Counters Module Tests:
+(module functionalities verified in counterstest program)
+
+	Sequence 1:
+		> I tested the creation of a new counters struct
+		  and verified that the creation was successful
+
+		> I tested the addition of integer values to 
+		  the created counters
+
+		> I tested the addition of duplicate values to the
+		  created counters
+
+		> I verified that the additions worked correctly 
+		  by then calling the get function and displaying
+		  the output 
+
+		> I tested the response of the counters get
+		  function when a value that was not inserted was
+		  passed as the argument, and verified that the 
+		  returned value was the expected (0)
+
+		> I tested deletion of the counters with the 
+		  delete function
+
+	Sequence 2:
+		> I tested the operation of the counters get
+		  function when it was invoked on an invalid
+		  counters structure
+
+		> I printed the results of this test to verify 
+		  that the expected value (0) was returned by the 
+		  function call
+
+Error statuses:
+	0 - success
+	1 - structure creation error
+
+Compilation of Test Program:
+(makefile included in module directory)
+	
+	make
+
+	

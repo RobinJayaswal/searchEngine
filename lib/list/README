@@ -1,0 +1,64 @@
+README for list module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+Overview:
+
+	The list module allows users to store data of 
+	arbitrary type in a sequence of 'nodes'.
+
+Exported Functions:
+
+	> list_t* list_new(void (*deletefunc)(void *data))
+		create a new list data structure
+		delete function used to delete user input data
+
+	> void* list_find(list_t *list, char *key)
+		return the data corresponding to given key
+		return NULL if key not found
+
+	> bool list_insert(list_t *list, char *key, void *data)
+		insert given key/data pair into list
+		return true if new data inserted
+		return false if error encountered, already exists
+
+	> void list_delete(list_t *list)
+		delete the entire data structure
+
+	*see module header file for more information
+
+Implementation:
+	This list module is implemented as a singly-linked
+	list. Insertions are performed at the end of the
+	list, meaning that the most recently inserted 
+	key/data pair will appear at the list's tail while the 
+	initially inserted key/data pair will appear at the 
+	head of the list. 
+
+Asumptions:
+	- the list does not accept duplicate keys; if
+	  a module user attempts to insert new data with
+	  a key that already exists in the list, that data
+	  will not be inserted
+
+	- NULL is returned by the list_find function if 
+	  an error is encountered while searching for the 
+	  given key, or if the key is not found in the list
+
+	- the user of the module is responsible for supplying 
+	  a valid delete function to the list_new function in 
+	  order to properly delete the user input data; the 
+	  module is not responsible for checking that the 
+	  provided delete function does in fact properly delete the
+	  data that is input into the list
+
+	- the only delete function that is considered invalid
+	  by the module is NULL
+
+	- the user of the module is responsible for managing
+	  the pointer to the list struct once the list has been
+	  deleted; the module is not responsible for ensuring
+	  that 'dangling pointers' are avoided
+
+Limitations:
+	no module limitations

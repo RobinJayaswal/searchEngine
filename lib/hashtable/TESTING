@@ -1,0 +1,99 @@
+TESTING for hashtable module
+Kyle Dotterrer, April 2016
+***********************************************************
+
+I created a test program file, hashtabletest.c, to test 
+the functionality of the hashtable module. I included
+the hashtable module header file in this program file, 
+and included all necessary object files to the linker
+during the linking process. 
+
+Hashtable Module Tests:
+(module functionalities verified in hashtabletest program)
+
+	Sequence 1:
+		> I test the creation of a new hashtable to
+		  hold statically allocated data
+
+		> I verify that hashtable creation succeeds
+		  by printing the result of this operation,
+		  informing user if creation fails
+
+		> I test insertion into the hashtable with
+		  statically allocated data, in the form of
+		  string literals (character arrays); I verify
+		  that these insertions are successful by 
+		  printing a message if the operation is 
+		  successful
+
+		> I test the insertion of an duplicate key
+		  and verify that the module responds 
+		  appropriately by not inserting the duplicate
+		  and informing the user that insertion was 
+		  unsuccessful
+
+		> I test the find function by searching the table 
+		  for keys that I had previously inserted; I verify
+		  the correct behavior of the module by printing
+		  out the data returned by this function
+
+		> I test the deletion of a table holding 
+		  statically-allocated data; the delete function
+		  in this case need not perform any operation to 
+		  properly delete the user input data
+
+	Sequence 2:
+		> I test the creation of a hashtable to 
+		  hold dynamically allocated data
+
+		> I verify that creation succeeds by informing
+		  the user and exiting if an error is encountered
+
+		> I test insertion of dynamically-allocated data, 
+		  verifying that the insertion operations are 
+		  successful by printing a message to stdout
+
+		> I test the find function on dynamically-allocated
+		  data, verifying that the function works correctly
+		  by printing out the data returned by the function
+
+		> I test deletion of a hashtable holding
+		  dynamically-allocated data; the delete function
+		  must now free the user input data before the
+		  lists themselves can be deleted
+
+	Sequence 3: 
+		> I test creation of a hashtable with a 
+		  single slot and verify that creation is
+		  successful
+
+		> I test insertions into this single-slot
+		  hashtable to verify that the table can
+		  handle collisions by inserting multiple
+		  statically allocated key/data pairs
+
+		> I test find functionality on this single-
+		  slot hashtable to verify that find works 
+		  correctly in the event of collisions
+
+		> I test deletion of a single-slot table
+
+	Sequence 4:
+		> I test creation of a hashtable with 0 slots,
+		  verifying that table creation fails as is 
+		  expected
+
+	Sequence 5:
+		> I test insertion into an invalid hashtable,
+		  verifying that the insertion operation
+		  fails by printing the result of the 
+		  operation to stdout
+
+Error Statuses:
+	0 - success
+	1 - structure creation error
+
+Compilation of Test Program:
+(makefile included in module directory)
+	
+	make
