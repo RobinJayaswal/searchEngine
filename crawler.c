@@ -1,1 +1,225 @@
-/* write your crawler here */
+/* ========================================================================= */
+/* 
+ * crawler.c
+ *
+ *
+ *
+ * Robin Jayaswal, Kyle Dotterrer, April 2016
+ */
+ /* ======================================================================== */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <unistd.h>
+#include "lib/memory/memory.h"
+#include "lib/bag/bag.h"
+#include "lib/hashtable/hashtable.h"
+#include "web.h"
+
+char* MALLOC_ERROR = "Error: Malloc Error";
+
+bool pagesave(WebPage *page, char *pageDr);
+bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
+WebPage *webpageNew(char *url, int depth);
+void webpageDelete(void *webpage);
+bool isWritableDirectory(char *dir);
+int numDigits(int number);
+
+int main(const int argc, char *argv[])
+{
+
+	/* Begin By Checking All Arguments */
+
+	char *progName = argv[0];
+
+	if (argc != 4) {
+		fprintf(stderr, "Error: invalid arguments\n");
+		fprintf(stderr, "usage: %s seedURL pageDirectory maxDepth\n", progName);
+		exit(1);
+	}
+
+	/* Test Format/Validity of Arguments */
+	char *seedURL = argv[1];
+	char *pageDirectory = argv[2];
+	int maxDepth;
+
+	if (!IsInternalURL(seedURL)) {
+		fprintf(stderr, "Error: seedURL invalid or non-internal\n");
+		exit(3);
+	}
+
+	if (!isWritableDirectory(pageDirectory)) {
+		fprintf(stderr, "Error: invalid page directory\n");
+		exit(5);
+	}
+
+	if (sscanf(argv[3], "%i", &maxDepth) < 1) {
+		fprintf(stderr, "Error: maxDepth must be integer\n");
+		exit(7);
+	}
+	if (maxDepth < 0 || maxDepth > 10) {
+		fprintf(stderr, "Error: maxDepth must be between 0-10\n");
+		exit(8);
+	}
+
+	/* Argument Tests Passed. Initialize Bag */
+
+	bag_t *pageBag = bag_new(webpageDelete);
+	hashtable_t *urlTable = hashtable_new(100, free);
+
+	/* Create WebPage struct for initial seed url page */
+
+	WebPage *seedPage;
+	seedPage = webpageNew(seedURL, 0);
+
+	/* Test that seed url is valid url, and if so populate html */
+
+	if (!GetWebPage(seedPage)){
+		fprintf(stderr, "Error: Could not retrieve web page at seed url\n");
+		bag_delete(pageBag);
+		webpageDelete(seedPage);
+		exit(4);
+	}
+
+	bag_insert(pageBag, seedPage);
+	hashtable_insert(urlTable, seedURL, NULL);
+
+	WebPage *nextPage = bag_extract(pageBag);
+
+	while (nextPage != NULL) {
+		
+		pagesave(nextPage, pageDirectory);
+
+		if (nextPage->depth < maxDepth) {
+			
+			pagescan(nextPage, pageBag, urlTable);
+		}
+
+		
+		nextPage = bag_extract(pageBag);
+		sleep(1);
+	}
+
+
+	exit(0);
+
+}
+
+
+bool pagesave(WebPage *page, char *pageDr)
+{
+	static int docID = 1;
+
+	char *filename = count_malloc_assert(strlen(pageDr) + numDigits(docID) + 2,
+		MALLOC_ERROR );
+	sprintf(filename, "%s/%d", filename, docID);
+
+	FILE *fp;
+	fp = fopen(filename, "w");
+
+	count_free(filename);
+
+	if (!fp)
+		return false;
+
+	
+	/* Print output to file in appropriate format. MAKE OWN FUNCTION */
+
+	int a, b, c;
+
+	a = fputs(page->url, fp);
+
+	// create string representation of page depth
+	char *depth = count_malloc_assert(numDigits(page->depth) +1, MALLOC_ERROR);
+	// PUTINT FUNCTION HERE
+	sscanf(page->depth, "%d", depth);
+	b = fputs(depth, fp);
+	count_free(depth);
+
+	c = fputs(page->html, fp);
+
+	if (a == EOF || b == EOF || c == EOF)
+		return false;	// problem printing to file
+
+	fclose(fp);
+
+	return true;
+}
+
+bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
+{
+	int pos = 0;
+	char *result = NULL;
+	char *base_url = "http://old-www.cs.dartmouth.edu/";
+	WebPage *newPage;
+
+	while ((pos = GetNextURL(page->html, pos, base_url, &result)) > 0) {
+      
+		if(IsInternalURL(result)) {
+
+			if(hashtable_insert(urlTable, result, NULL)) {
+
+				newPage = webpageNew(result, page->depth + 1);
+
+				bag_insert(pageBag, newPage);
+			}
+    	}
+	}
+	return true;
+}
+
+/*
+ *
+ */
+int numDigits(int number)
+{
+	if ( (number / 10 ) == 0 ) {
+		return 1;
+	}
+	else {
+		return 1 + numDigits(number/10);
+	}
+}
+
+/*
+ * IsWritableDirectory: determine if the given 
+ * directory exists and is able to be written to;
+ * return true if directory is valid, false otherwise
+ * Credit: David Kotz
+ */
+bool isWritableDirectory(char *dir)
+{
+	char *fn = count_malloc_assert(strlen(dir) + 10, MALLOC_ERROR);
+
+	// build filename string
+	sprintf(fn, "%s/.crawler", dir);
+
+	if (fopen(fn, "w") == NULL) {
+		count_free(fn);
+		return false;
+	}
+	count_free(fn);
+	return true;
+}
+
+WebPage *webpageNew(char *url, int depth)
+{
+	WebPage *page = count_malloc_assert(sizeof(WebPage), 
+		MALLOC_ERROR);
+
+	page->url = url;
+	page->depth = depth;
+	page->html = NULL;
+	page->html_len = 0;
+
+	return page;
+}
+
+void webpageDelete(void *webpage)
+{
+	/* Free Stuff */
+}
+
+

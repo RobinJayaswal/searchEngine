@@ -16,7 +16,7 @@ $(PROG): $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 # crawler source dependencies; add others as needed
-crawler.o: web.h 
+crawler.o: web.h
 web.o: web.h
 
 # build the library

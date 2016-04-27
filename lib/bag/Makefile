@@ -9,12 +9,12 @@ PROG = bagtest
 OBJS = bag.o bagtest.o
 LIBS = 
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+#$(PROG): $(OBJS)
+#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 
 bag.o: bag.h
-bagtest.o: bag.h
+#bagtest.o: bag.h
 
 
 clean:

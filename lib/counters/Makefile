@@ -9,12 +9,12 @@ PROG = counterstest
 OBJS = counters.o counterstest.o
 LIBS = 
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+#$(PROG): $(OBJS)
+#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 
 counters.o: counters.h
-counterstest.o: counters.h
+#counterstest.o: counters.h
 
 
 clean:

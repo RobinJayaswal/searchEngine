@@ -9,12 +9,12 @@ PROG = hashtabletest
 OBJS = hashtable.o hashtabletest.o jhash.o list.o
 LIBS = 
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+#$(PROG): $(OBJS)
+#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 
 hashtable.o: hashtable.h jhash.h
-hashtabletest.o: hashtable.h
+#hashtabletest.o: hashtable.h
 list.o: list.h
 jhash.o: jhash.h
 

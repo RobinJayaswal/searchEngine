@@ -9,12 +9,12 @@ PROG = listtest
 OBJS = list.o listtest.o
 LIBS = 
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+#$(PROG): $(OBJS)
+#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 
 list.o: list.h
-listtest.o: list.h
+#listtest.o: list.h
 
 
 clean:
