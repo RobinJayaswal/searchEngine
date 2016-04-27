@@ -6,11 +6,11 @@ See [Lab 4 instructions](http://www.cs.dartmouth.edu/~cs50/Labs/Lab4.html)
 for more information.
 
 
-###Exit Codes Guide:
+### **Exit Codes:**
 
-0: Success
+* 0: Success
 
-####Argument Errors, 0-10
+#### Argument Errors, 0-10
 
 * 1: Incorrect Argument Count
 * 3: seedURL either invalid or not internal
