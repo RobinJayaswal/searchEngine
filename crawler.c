@@ -134,7 +134,7 @@ bool pagesave(WebPage *page, char *pageDr)
 	// create string representation of page depth
 	char *depth = count_malloc_assert(numDigits(page->depth) +1, MALLOC_ERROR);
 	// PUTINT FUNCTION HERE
-	sscanf(page->depth, "%d", depth);
+	sprintf(depth, "%d", page->depth);
 	b = fputs(depth, fp);
 	count_free(depth);
 
