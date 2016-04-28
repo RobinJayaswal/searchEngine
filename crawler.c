@@ -2,7 +2,21 @@
 /* 
  * crawler.c - crawl internal webpages, saving to specified page directory
  * 
- *
+ * usage: crawler seedPage pageDirectory maxDepth
+ *        (all arguments non-optional)
+ * output: 
+ * 
+ * functions:
+ * 		> pagesave:
+ * 		> pagescan: 
+ *      > webpageNew:
+ *      > webpageDelete:
+ *      > isWritableDirectory:
+ *      > numDigits:
+ *      > htDeleteFunc: 
+ * stdin:
+ * stdout:
+ * stderr: error messages
  *
  * Robin Jayaswal, Kyle Dotterrer, April 2016
  */
@@ -18,7 +32,7 @@
 #include "lib/hashtable/hashtable.h"
 #include "web.h"
 
-char* MALLOC_ERROR = "Error: memory allocation error";
+char* MALLOC_ERROR = "Error: memory allocation error";   // error message
 
 bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
@@ -26,6 +40,9 @@ WebPage *webpageNew(char *url, int depth);
 void webpageDelete(void *webpage);
 bool isWritableDirectory(char *dir);
 int numDigits(int number);
+int putInt(int num, FILE *fp);
+void htDeleteFunc(void *data);
+//inline static void log(const char *word, const int depth, const char *url);
 
 int main(const int argc, char *argv[])
 {
@@ -63,129 +80,161 @@ int main(const int argc, char *argv[])
 		exit(8);
 	}
 
-	/* Argument Tests Passed. Initialize Bag */
+	/* Argument Tests Passed. Initialize Data Structures */
 
 	bag_t *pageBag = bag_new(webpageDelete);
-	hashtable_t *urlTable = hashtable_new(100, free);
-	//hashtable_t *urlTable = NULL;
+	hashtable_t *urlTable = hashtable_new(100, htDeleteFunc);
 
-	/* Create WebPage struct for initial seed url page */
-
+	// create WebPage struct for initial seed url page 
 	WebPage *seedPage;
 	seedPage = webpageNew(seedURL, 0);
 
-	/* Test that seed url is valid url, and if so populate html */
-
+	// test that seed url is valid url, populate html 
 	if (!seedPage){
+		// failure, could not fetch page html
 		fprintf(stderr, "Error: Could not retrieve web page at seed url\n");
+		// free data structures and exit 
 		bag_delete(pageBag);
 		hashtable_delete(urlTable);
 		exit(4);
 	}
 
+	// seedurl is valid, insert corresponding page into bag
 	bag_insert(pageBag, seedPage);
+	// insert seedurl into table
 	hashtable_insert(urlTable, seedURL, NULL);
 
-	WebPage *nextPage = bag_extract(pageBag);
+	WebPage *nextPage;
 
-	while (nextPage != NULL) {
+	// while the bag of pages is not empty
+	while ( (nextPage = bag_extract(pageBag)) != NULL) {
+		
+		// extract the next page and save it to directory
 		pagesave(nextPage, pageDirectory);
 
 		if (nextPage->depth < maxDepth) {
-			
+			// depth valid, scan page for more urls
 			pagescan(nextPage, pageBag, urlTable);
 		}
-
-		
-		nextPage = bag_extract(pageBag);
 		sleep(1);
 	}
-
+	/* CLEANUP */
 
 	exit(0);
-
 }
 
-
+/*
+ * pagesave: write the information from specified page
+ * to new file in pageDirectory; file is of format:
+ * 		page URL
+ * 		depth
+ * 		page html
+ *      ........
+ * return true if pagesave was successful, false otherwise
+ */
 bool pagesave(WebPage *page, char *pageDr)
 {
+	// static docID maintained throughout calls to pagesave
 	static int docID = 1;
+	FILE *fp;
+	int a, b, c;
 
+	// allocate memory for the filename to be built
 	char *filename = count_malloc_assert(strlen(pageDr) + numDigits(docID) + 2,
-		MALLOC_ERROR );
+										 MALLOC_ERROR );
+	// concatenate the directoy name with docID
 	sprintf(filename, "%s/%d", pageDr, docID);
 
-	FILE *fp;
+	// open file for writing, check for failure
 	fp = fopen(filename, "w");
-	printf("%s\n", filename);
-	
-
 	if (!fp)
 		return false;
 
-	
-	/* Print output to file in appropriate format. MAKE OWN FUNCTION */
-
-	int a, b, c;
-
+	// print output to file in appropriate format 
 	a = fprintf(fp, "%s\n", page->url);
-
-	// create string representation of page depth
-	char *depth = count_malloc_assert(numDigits(page->depth)+1, MALLOC_ERROR);
-	sprintf(depth, "%d", page->depth);
-
-	b = fprintf(fp, "%s\n", depth);
-
-
+	b = putInt(page->depth, fp);
 	c = fprintf(fp, "%s\n", page->html);
 
-	if (a < 0 || b < 0 || c < 0)
-		return false;	// problem printing to file
-
 	fclose(fp);
-	count_free(depth);
 	count_free(filename);
+	docID++;   // increment docID for next file
 
-	docID++;
-
-	puts("finished pagesave\n");
-	return true;
+	// WE CAN MAKE THIS BETTER, DUMB USE OF BOOLEAN LOGIC********
+	if (a < 0 || b < 0 || c < 0) {
+		// problem printing to file
+		return false;	
+	} else 
+		return true;
 }
 
+/*
+ * pagescan: scan the given webpage for links; insert each
+ * unseen, valid link into the bag for later extraction
+ */
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 {
-	int pos = 0;
-	char *result = NULL;
-	char *base_url = page->url;
+	int pos = 0;                   // position in html string
+	char *result = NULL;           // will hold new url
+	char *base_url = page->url;    // url of page being searched
 
+	// loop over all urls on the page
 	while ((pos = GetNextURL(page->html, pos, base_url, &result)) > 0) {
       
 		if(IsInternalURL(result)) {
 
 			if(hashtable_insert(urlTable, result, NULL)) {
-				printf("found url: %s\n", result);
+				// url is valid and has not been seen before
 
+				// create a new webpage for the url, and insert into bag
 				WebPage *newPage = webpageNew(result, page->depth + 1);
 				bag_insert(pageBag, newPage);
 			}
     	}
+    	// free and NULL result for next iteration
     	free(result);
     	result = NULL;
 	}
+	// successful page scan
 	return true;
 }
 
 /*
- *
+ * webpageNew: create a new webpage struct
+ * from the given url, marked with the specified
+ * depth; use GetWebPage to populate html of page
  */
-int numDigits(int number)
+WebPage *webpageNew(char *url, int depth)
 {
-	if ( (number / 10 ) == 0 ) {
-		return 1;
+	// allocate memory for the new webpage
+	WebPage *page = count_malloc_assert(sizeof(WebPage), 
+		MALLOC_ERROR);
+
+	// allocate memory for the webpage url string
+	page->url = count_malloc_assert(strlen(url)+1, MALLOC_ERROR);
+	// copy the given url into webpage
+	strcpy(page->url, url);
+
+	page->depth = depth;
+	// GetWebPage expects these values
+	page->html = NULL;
+	page->html_len = 0;
+
+	if (!GetWebPage(page)) {
+		// failed to retrieve html
+	 	webpageDelete(page);
+	 	page = NULL;
 	}
-	else {
-		return 1 + numDigits(number/10);
-	}
+	return page;
+}
+
+/*
+ * webpageDelete: deallocate memory
+ * used by the webpage structure
+ */
+void webpageDelete(void *webpage)
+{
+	//free(webpage->url);
+	free(webpage);
 }
 
 /*
@@ -210,31 +259,56 @@ bool isWritableDirectory(char *dir)
 	}
 }
 
-WebPage *webpageNew(char *url, int depth)
+/*
+ * numDigits: recursively calculate
+ * the number of digits in given integer
+ */
+int numDigits(int number)
 {
-	WebPage *page = count_malloc_assert(sizeof(WebPage), 
-		MALLOC_ERROR);
-
-	page->url = count_malloc_assert(strlen(url)+1, MALLOC_ERROR);
-	strcpy(page->url, url);
-
-	page->depth = depth;
-	page->html = NULL;
-	page->html_len = 0;
-
-	printf("getting page with url: %s\n", page->url);
-
-	if (!GetWebPage(page)) {
-	 	webpageDelete(page);
-	 	page = NULL;
+	// integer division
+	if ( (number / 10 ) == 0 ) {
+		return 1;
 	}
-	//printf("got page with url: %s\n", page->url);
-	return page;
+	else {
+		return 1 + numDigits(number/10);
+	}
 }
 
-void webpageDelete(void *webpage)
+/*
+ * putInt: return pointer to string 
+ * representation of given integer, caller
+ * responsible for deallocation
+ */
+int putInt(int num, FILE *fp)
 {
-	/* Free Stuff */
+	int errorStatus;
+
+	char *numStr = count_malloc_assert(numDigits(num)+1, MALLOC_ERROR);
+	sprintf(numStr, "%d", num);
+
+	errorStatus = fprintf(fp, "%s\n", numStr);
+	
+	count_free(numStr);
+	return errorStatus;
 }
+
+/*
+ * htDeleteFunc: delete the data in the 
+ * hashtable of urls; data never inserted
+ * into table, nothing must be freed
+ */
+void htDeleteFunc(void *data)
+{
+	;
+}
+
+/*
+ * log: print log of crawler processes to stdout
+ * Credit: David Kotz
+ */
+/*inline static void log(const char *word, const int depth, const char *url)
+{
+  printf("%2d %*s%9s: %s\n", depth, depth, "", word, url);
+} */
 
 

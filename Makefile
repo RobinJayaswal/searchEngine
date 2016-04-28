@@ -1,6 +1,8 @@
-# Makefile TEMPLATE for 'crawler' module
+# Makefile for 'crawler' module
 #
-# David Kotz, April 2016
+# Template courtesy of David Kotz, April 2016
+# 
+# Robin Jayaswal, Kyle Dotterrer, April 2016
 
 PROG = crawler
 OBJS = crawler.o web.o
@@ -28,3 +30,4 @@ clean:
 	rm -f *.o
 	rm -f $(PROG)
 	cd lib; $(MAKE) clean
+	cd data; rm -f *
