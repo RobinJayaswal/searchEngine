@@ -66,7 +66,8 @@ int main(const int argc, char *argv[])
 	/* Argument Tests Passed. Initialize Bag */
 
 	bag_t *pageBag = bag_new(webpageDelete);
-	hashtable_t *urlTable = hashtable_new(100, free);
+	// hashtable_t *urlTable = hashtable_new(100, free);
+	hashtable_t *urlTable = NULL;
 
 	/* Create WebPage struct for initial seed url page */
 
@@ -117,7 +118,7 @@ bool pagesave(WebPage *page, char *pageDr)
 	FILE *fp;
 	fp = fopen(filename, "w");
 	printf("%s\n", filename);
-	count_free(filename);
+	
 
 	if (!fp)
 		return false;
@@ -127,14 +128,10 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	int a, b, c;
 
-	// fprintf(stderr, "%s\n", page->url);
-	// fprintf(stderr, "%s\n", page->html);
-
 	a = fprintf(fp, "%s\n", page->url);
 
 	// create string representation of page depth
 	char *depth = count_malloc_assert(numDigits(page->depth)+1, MALLOC_ERROR);
-	// PUTINT FUNCTION HERE
 	sprintf(depth, "%d", page->depth);
 
 	b = fprintf(fp, "%s\n", depth);
@@ -147,6 +144,7 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	fclose(fp);
 	count_free(depth);
+	count_free(filename);
 
 	docID++;
 
@@ -159,19 +157,20 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 	int pos = 0;
 	char *result = NULL;
 	char *base_url = page->url;
-	WebPage *newPage;
 
 	while ((pos = GetNextURL(page->html, pos, base_url, &result)) > 0) {
       
 		if(IsInternalURL(result)) {
 
-			if(hashtable_insert(urlTable, result, NULL)) {
-				printf("Entering webpagenew\n");
-				newPage = webpageNew(result, page->depth + 1);
-				printf("%s\n", newPage->html);
+			//if(hashtable_insert(urlTable, result, NULL)) {
+				printf("found url: %s\n", result);
+
+				WebPage *newPage = webpageNew(result, page->depth + 1);
 				bag_insert(pageBag, newPage);
-			}
+			//}
     	}
+    	free(result);
+    	result = NULL;
 	}
 	return true;
 }
@@ -205,9 +204,10 @@ bool isWritableDirectory(char *dir)
 	if (fopen(fn, "w") == NULL) {
 		count_free(fn);
 		return false;
+	} else {
+		count_free(fn);
+		return true;
 	}
-	count_free(fn);
-	return true;
 }
 
 WebPage *webpageNew(char *url, int depth)
@@ -215,16 +215,20 @@ WebPage *webpageNew(char *url, int depth)
 	WebPage *page = count_malloc_assert(sizeof(WebPage), 
 		MALLOC_ERROR);
 
-	page->url = url;
+	page->url = count_malloc_assert(strlen(url)+1, MALLOC_ERROR);
+	strcpy(page->url, url);
+
 	page->depth = depth;
 	page->html = NULL;
 	page->html_len = 0;
 
-	// if (!GetWebPage(page)) {
-	// 	webpageDelete(page);
-	// 	page = NULL;
-	// }
-	GetWebPage(page);
+	printf("getting page with url: %s\n", page->url);
+
+	if (!GetWebPage(page)) {
+	 	webpageDelete(page);
+	 	page = NULL;
+	}
+	//printf("got page with url: %s\n", page->url);
 	return page;
 }
 
