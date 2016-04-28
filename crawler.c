@@ -1,7 +1,7 @@
 /* ========================================================================= */
 /* 
- * crawler.c
- *
+ * crawler.c - crawl internal webpages, saving to specified page directory
+ * 
  *
  *
  * Robin Jayaswal, Kyle Dotterrer, April 2016
@@ -18,7 +18,7 @@
 #include "lib/hashtable/hashtable.h"
 #include "web.h"
 
-char* MALLOC_ERROR = "Error: Malloc Error";
+char* MALLOC_ERROR = "Error: memory allocation error";
 
 bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
@@ -29,7 +29,6 @@ int numDigits(int number);
 
 int main(const int argc, char *argv[])
 {
-
 	/* Begin By Checking All Arguments */
 
 	char *progName = argv[0];
@@ -76,10 +75,10 @@ int main(const int argc, char *argv[])
 
 	/* Test that seed url is valid url, and if so populate html */
 
-	if (!GetWebPage(seedPage)){
+	if (!seedPage){
 		fprintf(stderr, "Error: Could not retrieve web page at seed url\n");
 		bag_delete(pageBag);
-		webpageDelete(seedPage);
+		hashtable_delete(urlTable);
 		exit(4);
 	}
 
@@ -89,7 +88,6 @@ int main(const int argc, char *argv[])
 	WebPage *nextPage = bag_extract(pageBag);
 
 	while (nextPage != NULL) {
-		
 		pagesave(nextPage, pageDirectory);
 
 		if (nextPage->depth < maxDepth) {
@@ -114,11 +112,11 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	char *filename = count_malloc_assert(strlen(pageDr) + numDigits(docID) + 2,
 		MALLOC_ERROR );
-	sprintf(filename, "%s/%d", filename, docID);
+	sprintf(filename, "%s/%d", pageDr, docID);
 
 	FILE *fp;
 	fp = fopen(filename, "w");
-
+	printf("%s\n", filename);
 	count_free(filename);
 
 	if (!fp)
@@ -129,22 +127,30 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	int a, b, c;
 
-	a = fputs(page->url, fp);
+	// fprintf(stderr, "%s\n", page->url);
+	// fprintf(stderr, "%s\n", page->html);
+
+	a = fprintf(fp, "%s\n", page->url);
 
 	// create string representation of page depth
-	char *depth = count_malloc_assert(numDigits(page->depth) +1, MALLOC_ERROR);
+	char *depth = count_malloc_assert(numDigits(page->depth)+1, MALLOC_ERROR);
 	// PUTINT FUNCTION HERE
 	sprintf(depth, "%d", page->depth);
-	b = fputs(depth, fp);
-	count_free(depth);
 
-	c = fputs(page->html, fp);
+	b = fprintf(fp, "%s\n", depth);
 
-	if (a == EOF || b == EOF || c == EOF)
+
+	c = fprintf(fp, "%s\n", page->html);
+
+	if (a < 0 || b < 0 || c < 0)
 		return false;	// problem printing to file
 
 	fclose(fp);
+	count_free(depth);
 
+	docID++;
+
+	puts("finished pagesave\n");
 	return true;
 }
 
@@ -152,7 +158,7 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 {
 	int pos = 0;
 	char *result = NULL;
-	char *base_url = "http://old-www.cs.dartmouth.edu/";
+	char *base_url = page->url;
 	WebPage *newPage;
 
 	while ((pos = GetNextURL(page->html, pos, base_url, &result)) > 0) {
@@ -160,9 +166,9 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 		if(IsInternalURL(result)) {
 
 			if(hashtable_insert(urlTable, result, NULL)) {
-
+				printf("Entering webpagenew\n");
 				newPage = webpageNew(result, page->depth + 1);
-
+				printf("%s\n", newPage->html);
 				bag_insert(pageBag, newPage);
 			}
     	}
@@ -214,6 +220,11 @@ WebPage *webpageNew(char *url, int depth)
 	page->html = NULL;
 	page->html_len = 0;
 
+	// if (!GetWebPage(page)) {
+	// 	webpageDelete(page);
+	// 	page = NULL;
+	// }
+	GetWebPage(page);
 	return page;
 }
 
