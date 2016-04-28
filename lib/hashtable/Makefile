@@ -1,20 +1,19 @@
-# makefile for hashtabletest
-#  used explicitly for testing 'hashtable' module
+# makefile for hashtable module
+#
+# altered from original version:
+#  no longer builds test program
 #
 # Kyle Dotterrer, April 2016
 
 CC = gcc
+MAKE = make
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
-PROG = hashtabletest
-OBJS = hashtable.o hashtabletest.o jhash.o list.o
+
+OBJS = hashtable.o jhash.o list.o
 LIBS = 
 
-#$(PROG): $(OBJS)
-#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-
-hashtable.o: hashtable.h jhash.h
-#hashtabletest.o: hashtable.h
+hashtable.o: hashtable.h jhash.h list.h
 list.o: list.h
 jhash.o: jhash.h
 
@@ -22,4 +21,3 @@ jhash.o: jhash.h
 clean:
 	rm -f *~
 	rm -f *.o
-	rm -f hashtabletest

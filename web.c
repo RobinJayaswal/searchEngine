@@ -95,9 +95,7 @@ bool GetWebPage(WebPage* page)
     page->html_len = 0;
 
     // init curl session
-    printf("Here\n");
     curl_handle = curl_easy_init();
-    printf("Also here\n");
 
     // specify url
     curl_easy_setopt(curl_handle, CURLOPT_URL, page->url);

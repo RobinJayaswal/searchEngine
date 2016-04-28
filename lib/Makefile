@@ -1,7 +1,9 @@
-# Makefile TEMPLATE for 'cs50ds' library
+# Makefile for cs50ds library
 #   Builds and compiles all the data structures into a library.
 #
-# David Kotz, April 2016
+# Template courtesy of David Kotz, April 2016
+#
+# Robin Jayaswal, Kyle Dotterrer, April 2016
 
 OBJS = memory/memory.o list/list.o hashtable/hashtable.o hashtable/jhash.o hashtable/list.o bag/bag.o counters/counters.o
 LIB = cs50ds.a
@@ -10,11 +12,11 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb
 CC = gcc
 MAKE = make
 
+# build the library
 $(LIB): $(OBJS)
 	ar cr $@ $^
 
-# add other targets for the other .o files
-
+# rules for building each object file
 memory/memory.o: memory/memory.c memory/memory.h
 	cd memory; $(MAKE) memory.o
 
@@ -30,7 +32,7 @@ list/list.o: list/list.c list/list.h
 hashtable/hashtable.o: hashtable/hashtable.c hashtable/hashtable.h
 	cd hashtable; $(MAKE) hashtable.o
 
-# add cleanup commands for other subdirectories
+# clean library and subdirectories
 clean:
 	rm -f *~
 	rm -f *.o

@@ -1,23 +1,21 @@
-# makefile for listtest
-#  used explicitly for testing list module
+# makefile for list module
+#
+# altered from original version:
+#  no longer builds test program  
 #
 # Kyle Dotterrer, April 2016
 
 CC = gcc
+MAKE = make
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
-PROG = listtest
-OBJS = list.o listtest.o
-LIBS = 
 
-#$(PROG): $(OBJS)
-#	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+OBJS = list.o
+LIBS = 
 
 
 list.o: list.h
-#listtest.o: list.h
 
 
 clean:
 	rm -f *~
 	rm -f *.o
-	rm -f listtest

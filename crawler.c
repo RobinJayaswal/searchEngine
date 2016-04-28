@@ -14,6 +14,7 @@
  *      > isWritableDirectory:
  *      > numDigits:
  *      > htDeleteFunc: 
+ *      > logAction:
  * stdin:
  * stdout:
  * stderr: error messages
@@ -42,7 +43,7 @@ bool isWritableDirectory(char *dir);
 int numDigits(int number);
 int putInt(int num, FILE *fp);
 void htDeleteFunc(void *data);
-//inline static void log(const char *word, const int depth, const char *url);
+inline static void logAction(char *word, int depth, char *url);
 
 int main(const int argc, char *argv[])
 {
@@ -112,6 +113,8 @@ int main(const int argc, char *argv[])
 		// extract the next page and save it to directory
 		pagesave(nextPage, pageDirectory);
 
+		logAction("Saved", nextPage->depth, nextPage->url);
+
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls
 			pagescan(nextPage, pageBag, urlTable);
@@ -157,7 +160,7 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	fclose(fp);
 	count_free(filename);
-	docID++;   // increment docID for next file
+	docID++;   
 
 	// WE CAN MAKE THIS BETTER, DUMB USE OF BOOLEAN LOGIC********
 	if (a < 0 || b < 0 || c < 0) {
@@ -173,28 +176,33 @@ bool pagesave(WebPage *page, char *pageDr)
  */
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 {
-	int pos = 0;                   // position in html string
-	char *result = NULL;           // will hold new url
-	char *base_url = page->url;    // url of page being searched
+	int pos = 0;                      // position in html string
+	char *result = NULL;              // will hold new url
+	char *base_url = page->url;       // url of scanned page
+	int currentDepth = page->depth;   // depth of scanned page
+
+	logAction("Scanning", currentDepth, page->url);
 
 	// loop over all urls on the page
 	while ((pos = GetNextURL(page->html, pos, base_url, &result)) > 0) {
+
+		logAction("Found", currentDepth, result);
       
 		if(IsInternalURL(result)) {
 
 			if(hashtable_insert(urlTable, result, NULL)) {
 				// url is valid and has not been seen before
-
 				// create a new webpage for the url, and insert into bag
 				WebPage *newPage = webpageNew(result, page->depth + 1);
 				bag_insert(pageBag, newPage);
+
+				logAction("Added", currentDepth, result);
 			}
     	}
     	// free and NULL result for next iteration
     	free(result);
     	result = NULL;
 	}
-	// successful page scan
 	return true;
 }
 
@@ -224,6 +232,7 @@ WebPage *webpageNew(char *url, int depth)
 	 	webpageDelete(page);
 	 	page = NULL;
 	}
+	logAction("Fetched", depth, url);
 	return page;
 }
 
@@ -283,9 +292,12 @@ int putInt(int num, FILE *fp)
 {
 	int errorStatus;
 
+	// allocate memory for string representation
 	char *numStr = count_malloc_assert(numDigits(num)+1, MALLOC_ERROR);
+	// build the string
 	sprintf(numStr, "%d", num);
 
+	// print to file and record error status
 	errorStatus = fprintf(fp, "%s\n", numStr);
 	
 	count_free(numStr);
@@ -305,10 +317,11 @@ void htDeleteFunc(void *data)
 /*
  * log: print log of crawler processes to stdout
  * Credit: David Kotz
+ * Note: function title changed to avoid compilation warning
  */
-/*inline static void log(const char *word, const int depth, const char *url)
+inline static void logAction(char *word, int depth, char *url)
 {
   printf("%2d %*s%9s: %s\n", depth, depth, "", word, url);
-} */
+} 
 
 
