@@ -24,7 +24,7 @@ bag/bag.o: bag/bag.c bag/bag.h
 counters/counters.o: counters/counters.c counters/counters.h
 	cd counters; $(MAKE) counters.o
 
-list/list.o: list/list.o list/list.h
+list/list.o: list/list.c list/list.h
 	cd list; $(MAKE) list.o
 
 hashtable/hashtable.o: hashtable/hashtable.c hashtable/hashtable.h

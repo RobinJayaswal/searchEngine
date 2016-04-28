@@ -79,7 +79,7 @@ listnode_t* listnode_new(char *key, void *data)
 		return NULL;
 
 	// allocate memory for the key
-	node->key = malloc(strlen(key + 1));
+	node->key = malloc(strlen(key)+1);
 
 	if (node->key == NULL) {
 		// error allocating memory for key

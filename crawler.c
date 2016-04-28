@@ -66,8 +66,8 @@ int main(const int argc, char *argv[])
 	/* Argument Tests Passed. Initialize Bag */
 
 	bag_t *pageBag = bag_new(webpageDelete);
-	// hashtable_t *urlTable = hashtable_new(100, free);
-	hashtable_t *urlTable = NULL;
+	hashtable_t *urlTable = hashtable_new(100, free);
+	//hashtable_t *urlTable = NULL;
 
 	/* Create WebPage struct for initial seed url page */
 
@@ -162,12 +162,12 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
       
 		if(IsInternalURL(result)) {
 
-			//if(hashtable_insert(urlTable, result, NULL)) {
+			if(hashtable_insert(urlTable, result, NULL)) {
 				printf("found url: %s\n", result);
 
 				WebPage *newPage = webpageNew(result, page->depth + 1);
 				bag_insert(pageBag, newPage);
-			//}
+			}
     	}
     	free(result);
     	result = NULL;
