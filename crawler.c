@@ -39,7 +39,7 @@ bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
 void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable);
 WebPage *webpageNew(char *url, int depth);
-void webpageDelete(WebPage *webpage);
+void webpageDelete(void *webpage);
 bool isWritableDirectory(char *dir);
 int numDigits(int number);
 int putInt(int num, FILE *fp);
@@ -48,7 +48,7 @@ inline static void logAction(char *word, int depth, char *url);
 
 int main(const int argc, char *argv[])
 {
-	/* Begin By Checking All Arguments */
+	/* Test Format/Validity of Arguments */
 
 	char *progName = argv[0];
 
@@ -58,7 +58,6 @@ int main(const int argc, char *argv[])
 		exit(1);
 	}
 
-	/* Test Format/Validity of Arguments */
 	char *seedURL = argv[1];
 	char *pageDirectory = argv[2];
 	int maxDepth;
@@ -84,9 +83,8 @@ int main(const int argc, char *argv[])
 
 	/* Argument Tests Passed. Initialize Data Structures */
 
-	bag_t *pageBag = bag_new(htDeleteFunc);
-	hashtable_t *urlTable = hashtable_new(1000, htDeleteFunc);
-	//hashtable_t *urlTable = NULL;
+	bag_t *pageBag = bag_new(htDeleteFunc);                     
+	hashtable_t *urlTable = hashtable_new(1000, htDeleteFunc);   
 
 	// create WebPage struct for initial seed url page 
 	WebPage *seedPage;
@@ -112,18 +110,15 @@ int main(const int argc, char *argv[])
 	// while the bag of pages is not empty
 	while ( (nextPage = bag_extract(pageBag)) != NULL) {
 		
-		//printf("Got page from Bag. Url Is %s\n", nextPage->url);
 		// extract the next page and save it to directory
 		pagesave(nextPage, pageDirectory);
-
-		
 
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls
 			pagescan(nextPage, pageBag, urlTable);
 		}
 
-		sleep(3);
+		sleep(1);
 	}
 
 	webpageDelete(nextPage);
@@ -132,8 +127,10 @@ int main(const int argc, char *argv[])
 	bag_delete(pageBag);
 	hashtable_delete(urlTable);
 
-	//count_report(stdout, "Report");
-
+#ifdef LOG
+	// report memory allocations
+	count_report(stdout, "Memory Allocation Report");
+#endif
 
 	exit(0);
 }
@@ -154,17 +151,11 @@ bool pagesave(WebPage *page, char *pageDr)
 	FILE *fp;
 	int a, b, c;
 
-
-	int numberDig = numDigits(docID);
-	printf("DocID is : %i, and it has %i digits\n", docID, numberDig);
-
 	// allocate memory for the filename to be built
 	char *filename = count_malloc_assert(strlen(pageDr) + numDigits(docID) + 2,
 										 MALLOC_ERROR );
-	// concatenate the directoy name with docID
+	// concatenate the directory name with docID
 	sprintf(filename, "%s/%d", pageDr, docID);
-
-	printf("Filename is %s\n", filename );
 
 	// open file for writing, check for failure
 	fp = fopen(filename, "w");
@@ -178,15 +169,12 @@ bool pagesave(WebPage *page, char *pageDr)
 
 	fclose(fp);
 	count_free(filename);
-	docID++;   
-	logAction("Saved", page->depth, page->url);
 
-	// WE CAN MAKE THIS BETTER, DUMB USE OF BOOLEAN LOGIC********
-	if (a < 0 || b < 0 || c < 0) {
-		// problem printing to file
-		return false;	
-	} else 
-		return true;
+	logAction("Saved", page->depth, page->url);
+	docID++;   
+
+	// report if any prints experienced error
+	return a > 0 && b > 0 && c > 0;
 }
 
 /*
@@ -208,7 +196,6 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 		logAction("Found", currentDepth, result);
       
 		if(IsInternalURL(result)) {
-			printf("Found internal URL. About to process: %s\n", result);
 			processURL(result, currentDepth, pageBag, urlTable);
     	}
     	// free and NULL result for next iteration
@@ -216,12 +203,13 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
     	result = NULL;
 	}
 	//free(result);
-	//result = NULL;
 	return true;
 }
 
 /*
- * processURL: 
+ * processURL: check if the url already exists in the urlTable,
+ * and fetch page html if it has not been see before; only add
+ * the newly created page to the bag if the request is successful
  */
 void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable)
 {
@@ -229,11 +217,10 @@ void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable)
 		// url is valid and has not been seen before
 		// create a new webpage for the url, and insert into bag
 
-		printf("Creating web page new\n");
 		WebPage *newPage = webpageNew(url, depth);
 
-		printf("Created new page. URL is: %s\n", (newPage ? newPage->url: "NULL"));
 		if (newPage){
+			// insert into bag if request successful
 			bag_insert(pageBag, newPage);
 			logAction("Added", depth, url);
 		}
@@ -266,7 +253,7 @@ WebPage *webpageNew(char *url, int currentDepth)
 	 	webpageDelete(page);
 	 	page = NULL;
 	}
-	//logAction("Fetched", (currentDepth < 0 ? 0 : currentDepth), url);
+	logAction("Fetched", (currentDepth < 0 ? 0 : currentDepth), url);
 	return page;
 }
 
@@ -274,12 +261,12 @@ WebPage *webpageNew(char *url, int currentDepth)
  * webpageDelete: deallocate memory
  * used by the webpage structure
  */
-void webpageDelete(WebPage *page)
+void webpageDelete(void *page)
 {
-	//WebPage *webpage = (WebPage*) page;
+	WebPage *webpage = (WebPage*) page;
 
-	count_free(page->url);
-	free(page->html);
+	count_free(webpage->url);
+	free(webpage->html);
 
 	count_free(page);
 }
