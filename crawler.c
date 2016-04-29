@@ -1,27 +1,39 @@
-/* ========================================================================= */
-/* 
+/* ============================================================================
+ * 
  * crawler.c - crawl internal webpages, saving to specified page directory
  * 
  * usage: crawler seedPage pageDirectory maxDepth
  *        (all arguments non-optional)
- * output: 
+ * where:
+ *       > seedPage is the page from which web crawling commences
+ *       > pageDirectory is the directory path where pages will be stored
+ *       > maxDepth is the maximum page depth that the crawler will explore;
+ *         a maxDepth of 0 tells the crawler to only fetch seedPage,
+ *         a maxDepth of 1 tells crawler to fetch pages linked from seed, etc
+ *
+ * output: The crawler iteratively searches webpages for links to other 
+ *         pages and saves each valid page to the given page directory
+ *         in the specified format (see README). The webpages must be
+ *         internal, and duplicates will not be considered multiple times.
  * 
  * functions:
- * 		> pagesave:
- * 		> pagescan: 
- *      > webpageNew:
- *      > webpageDelete:
- *      > isWritableDirectory:
- *      > numDigits:
- *      > htDeleteFunc: 
- *      > logAction:
- * stdin:
- * stdout:
+ * 		> pagesave: save the contents of given page in specified format
+ * 		> pagescan: scan page html for url links
+ *      > processURL: determine validity and fetch given url
+ *      > webpageNew: create new webpage struct from url
+ *      > webpageDelete: deallocate and delete webpage struct
+ *      > isWritableDirectory: determine if diretory exists/is writable
+ *      > numDigits: determine number of digits in given integer
+ *      > deleteFunc: delete the data passed into hashtable
+ *      > logAction: print crawler processes to stdout
+ *
+ * stdin: none
+ * stdout: none, or process log if compiled with -DLOG
  * stderr: error messages
  *
  * Robin Jayaswal, Kyle Dotterrer, April 2016
- */
- /* ======================================================================== */
+ *
+ =========================================================================== */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +41,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "lib/memory/memory.h"
-#include "lib/bag/bag.h"
 #include "lib/hashtable/hashtable.h"
+#include "lib/bag/bag.h"
 #include "web.h"
 
 char* MALLOC_ERROR = "Error: memory allocation error";   // error message
@@ -39,18 +51,19 @@ bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
 void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable);
 WebPage *webpageNew(char *url, int depth);
-void webpageDelete(void *webpage);
+void webpageDelete(WebPage *webpage);
 bool isWritableDirectory(char *dir);
 int numDigits(int number);
 int putInt(int num, FILE *fp);
-void htDeleteFunc(void *data);
+void deleteFunc(void *data);
 inline static void logAction(char *word, int depth, char *url);
+
 
 int main(const int argc, char *argv[])
 {
 	/* Test Format/Validity of Arguments */
 
-	char *progName = argv[0];
+	const char *progName = argv[0];
 
 	if (argc != 4) {
 		fprintf(stderr, "Error: invalid arguments\n");
@@ -83,8 +96,8 @@ int main(const int argc, char *argv[])
 
 	/* Argument Tests Passed. Initialize Data Structures */
 
-	bag_t *pageBag = bag_new(htDeleteFunc);                     
-	hashtable_t *urlTable = hashtable_new(1000, htDeleteFunc);   
+	bag_t *pageBag = bag_new(deleteFunc);                     
+	hashtable_t *urlTable = hashtable_new(1000, deleteFunc);   
 
 	// create WebPage struct for initial seed url page 
 	WebPage *seedPage;
@@ -117,11 +130,10 @@ int main(const int argc, char *argv[])
 			// depth valid, scan page for more urls
 			pagescan(nextPage, pageBag, urlTable);
 		}
-
+		// deallocate the page
+		webpageDelete(nextPage);
 		sleep(1);
 	}
-
-	webpageDelete(nextPage);
 
 	/* CLEANUP */
 	bag_delete(pageBag);
@@ -202,7 +214,10 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
     	free(result);
     	result = NULL;
 	}
-	//free(result);
+	// free result if GetNextURL fails
+	if (result != NULL)
+		free(result);
+
 	return true;
 }
 
@@ -243,7 +258,9 @@ WebPage *webpageNew(char *url, int currentDepth)
 	// copy the given url into webpage
 	strcpy(page->url, url);
 
+	// depth of new page is one below current
 	page->depth = currentDepth + 1;
+	
 	// GetWebPage expects these values
 	page->html = NULL;
 	page->html_len = 0;
@@ -261,13 +278,13 @@ WebPage *webpageNew(char *url, int currentDepth)
  * webpageDelete: deallocate memory
  * used by the webpage structure
  */
-void webpageDelete(void *page)
+void webpageDelete(WebPage *page)
 {
-	WebPage *webpage = (WebPage*) page;
+	// deallocate page url, html
+	count_free(page->url);
+	free(page->html);
 
-	count_free(webpage->url);
-	free(webpage->html);
-
+	// deallocate page
 	count_free(page);
 }
 
@@ -279,12 +296,13 @@ void webpageDelete(void *page)
  */
 bool isWritableDirectory(char *dir)
 {
-	FILE *fp;
 	char *fn = count_malloc_assert(strlen(dir) + 10, MALLOC_ERROR);
+	FILE *fp;
 
 	// build filename string
 	sprintf(fn, "%s/.crawler", dir);
 
+	// create file, check for opening error
 	if ( (fp = fopen(fn, "w")) == NULL) {
 		count_free(fn);
 		fclose(fp);
@@ -307,7 +325,7 @@ int numDigits(int number)
 		return 1;
 	}
 	else {
-		return 1 + numDigits(number/10);
+		return 1 + numDigits(number / 10);
 	}
 }
 
@@ -333,11 +351,11 @@ int putInt(int num, FILE *fp)
 }
 
 /*
- * htDeleteFunc: delete the data in the 
+ * deleteFunc: delete the data in the 
  * hashtable of urls; data never inserted
  * into table, nothing must be freed
  */
-void htDeleteFunc(void *data)
+void deleteFunc(void *data)
 {
 	;
 }

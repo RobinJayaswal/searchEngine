@@ -9,7 +9,7 @@ OBJS = crawler.o web.o
 LIBS = -lcurl
 LLIBS = lib/cs50ds.a
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -DLOG
 CC = gcc
 MAKE = make
 

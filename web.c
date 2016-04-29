@@ -95,8 +95,8 @@ bool GetWebPage(WebPage* page)
     page->html_len = 0;
     
     // init curl session
+    curl_global_init(CURL_GLOBAL_DEFAULT);
     curl_handle = curl_easy_init();
-
 
     // specify url
     curl_easy_setopt(curl_handle, CURLOPT_URL, page->url);
@@ -137,6 +137,7 @@ bool GetWebPage(WebPage* page)
 
     // cleanup curl stuff
     curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
 
     return status;
 }

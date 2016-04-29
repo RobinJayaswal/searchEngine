@@ -5,6 +5,20 @@
 See [Lab 4 instructions](http://www.cs.dartmouth.edu/~cs50/Labs/Lab4.html)
 for more information.
 
+### **Program Overview**
+Tiny Search Engine (TSE) is a basic search engine capable of crawling, indexing, and querying internal web pages.
+
+#### TSE consists of three subsystems:
+* Crawler
+* Indexer
+* Querier 
+
+
+### **Design Specifications**
+
+#### Crawler:
+The crawler is a subsystem of the TSE. Crawler crawls a website and retrieves webpages starting with a specified URL. It parses the initial webpage, extracts any embedded href URLs and retrieves those pages, and crawls the pages found at those URLs. The crawler limits itself to maxDepth hops from the seed URL. When the crawling process is complete, the indexing of the collected documents can begin.
+
 
 ### **Exit Codes:**
 
