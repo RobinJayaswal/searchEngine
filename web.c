@@ -93,9 +93,10 @@ bool GetWebPage(WebPage* page)
     // allocate space for the html, curl will realloc as needed
     page->html = calloc(1, sizeof(char));
     page->html_len = 0;
-
+    
     // init curl session
     curl_handle = curl_easy_init();
+
 
     // specify url
     curl_easy_setopt(curl_handle, CURLOPT_URL, page->url);

@@ -37,8 +37,9 @@ char* MALLOC_ERROR = "Error: memory allocation error";   // error message
 
 bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
+void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable);
 WebPage *webpageNew(char *url, int depth);
-void webpageDelete(void *webpage);
+void webpageDelete(WebPage *webpage);
 bool isWritableDirectory(char *dir);
 int numDigits(int number);
 int putInt(int num, FILE *fp);
@@ -83,12 +84,13 @@ int main(const int argc, char *argv[])
 
 	/* Argument Tests Passed. Initialize Data Structures */
 
-	bag_t *pageBag = bag_new(webpageDelete);
-	hashtable_t *urlTable = hashtable_new(100, htDeleteFunc);
+	bag_t *pageBag = bag_new(htDeleteFunc);
+	hashtable_t *urlTable = hashtable_new(1000, htDeleteFunc);
+	//hashtable_t *urlTable = NULL;
 
 	// create WebPage struct for initial seed url page 
 	WebPage *seedPage;
-	seedPage = webpageNew(seedURL, 0);
+	seedPage = webpageNew(seedURL, -1);
 
 	// test that seed url is valid url, populate html 
 	if (!seedPage){
@@ -110,18 +112,28 @@ int main(const int argc, char *argv[])
 	// while the bag of pages is not empty
 	while ( (nextPage = bag_extract(pageBag)) != NULL) {
 		
+		//printf("Got page from Bag. Url Is %s\n", nextPage->url);
 		// extract the next page and save it to directory
 		pagesave(nextPage, pageDirectory);
 
-		logAction("Saved", nextPage->depth, nextPage->url);
+		
 
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls
 			pagescan(nextPage, pageBag, urlTable);
 		}
-		sleep(1);
+
+		sleep(3);
 	}
+
+	webpageDelete(nextPage);
+
 	/* CLEANUP */
+	bag_delete(pageBag);
+	hashtable_delete(urlTable);
+
+	//count_report(stdout, "Report");
+
 
 	exit(0);
 }
@@ -142,11 +154,17 @@ bool pagesave(WebPage *page, char *pageDr)
 	FILE *fp;
 	int a, b, c;
 
+
+	int numberDig = numDigits(docID);
+	printf("DocID is : %i, and it has %i digits\n", docID, numberDig);
+
 	// allocate memory for the filename to be built
 	char *filename = count_malloc_assert(strlen(pageDr) + numDigits(docID) + 2,
 										 MALLOC_ERROR );
 	// concatenate the directoy name with docID
 	sprintf(filename, "%s/%d", pageDr, docID);
+
+	printf("Filename is %s\n", filename );
 
 	// open file for writing, check for failure
 	fp = fopen(filename, "w");
@@ -161,6 +179,7 @@ bool pagesave(WebPage *page, char *pageDr)
 	fclose(fp);
 	count_free(filename);
 	docID++;   
+	logAction("Saved", page->depth, page->url);
 
 	// WE CAN MAKE THIS BETTER, DUMB USE OF BOOLEAN LOGIC********
 	if (a < 0 || b < 0 || c < 0) {
@@ -189,21 +208,36 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 		logAction("Found", currentDepth, result);
       
 		if(IsInternalURL(result)) {
-
-			if(hashtable_insert(urlTable, result, NULL)) {
-				// url is valid and has not been seen before
-				// create a new webpage for the url, and insert into bag
-				WebPage *newPage = webpageNew(result, page->depth + 1);
-				bag_insert(pageBag, newPage);
-
-				logAction("Added", currentDepth, result);
-			}
+			printf("Found internal URL. About to process: %s\n", result);
+			processURL(result, currentDepth, pageBag, urlTable);
     	}
     	// free and NULL result for next iteration
     	free(result);
     	result = NULL;
 	}
+	//free(result);
+	//result = NULL;
 	return true;
+}
+
+/*
+ * processURL: 
+ */
+void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable)
+{
+	if(hashtable_insert(urlTable, url, NULL)) {
+		// url is valid and has not been seen before
+		// create a new webpage for the url, and insert into bag
+
+		printf("Creating web page new\n");
+		WebPage *newPage = webpageNew(url, depth);
+
+		printf("Created new page. URL is: %s\n", (newPage ? newPage->url: "NULL"));
+		if (newPage){
+			bag_insert(pageBag, newPage);
+			logAction("Added", depth, url);
+		}
+	}
 }
 
 /*
@@ -211,7 +245,7 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
  * from the given url, marked with the specified
  * depth; use GetWebPage to populate html of page
  */
-WebPage *webpageNew(char *url, int depth)
+WebPage *webpageNew(char *url, int currentDepth)
 {
 	// allocate memory for the new webpage
 	WebPage *page = count_malloc_assert(sizeof(WebPage), 
@@ -222,7 +256,7 @@ WebPage *webpageNew(char *url, int depth)
 	// copy the given url into webpage
 	strcpy(page->url, url);
 
-	page->depth = depth;
+	page->depth = currentDepth + 1;
 	// GetWebPage expects these values
 	page->html = NULL;
 	page->html_len = 0;
@@ -232,7 +266,7 @@ WebPage *webpageNew(char *url, int depth)
 	 	webpageDelete(page);
 	 	page = NULL;
 	}
-	logAction("Fetched", depth, url);
+	//logAction("Fetched", (currentDepth < 0 ? 0 : currentDepth), url);
 	return page;
 }
 
@@ -240,10 +274,14 @@ WebPage *webpageNew(char *url, int depth)
  * webpageDelete: deallocate memory
  * used by the webpage structure
  */
-void webpageDelete(void *webpage)
+void webpageDelete(WebPage *page)
 {
-	//free(webpage->url);
-	free(webpage);
+	//WebPage *webpage = (WebPage*) page;
+
+	count_free(page->url);
+	free(page->html);
+
+	count_free(page);
 }
 
 /*
@@ -254,16 +292,19 @@ void webpageDelete(void *webpage)
  */
 bool isWritableDirectory(char *dir)
 {
+	FILE *fp;
 	char *fn = count_malloc_assert(strlen(dir) + 10, MALLOC_ERROR);
 
 	// build filename string
 	sprintf(fn, "%s/.crawler", dir);
 
-	if (fopen(fn, "w") == NULL) {
+	if ( (fp = fopen(fn, "w")) == NULL) {
 		count_free(fn);
+		fclose(fp);
 		return false;
 	} else {
 		count_free(fn);
+		fclose(fp);
 		return true;
 	}
 }
@@ -321,7 +362,9 @@ void htDeleteFunc(void *data)
  */
 inline static void logAction(char *word, int depth, char *url)
 {
+#ifdef LOG
   printf("%2d %*s%9s: %s\n", depth, depth, "", word, url);
+#endif
 } 
 
 
