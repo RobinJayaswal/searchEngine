@@ -10,11 +10,9 @@ The crawler is a subsystem of the TSE. Crawler crawls a website and retrieves we
 
 ### **Program Compilation**
 
-Within the tse/ directory, the default crawler can be compiled with the command:
-#### *make*
+Within the tse/ directory, the default crawler can be compiled with the command: **_make_**
 
-Specifying the following command line will display output of Crawler processes, as well as print out a memory allocation report at the termination of the program: 
-#### *make log*
+Specifying the following command line will display output of Crawler processes, as well as print out a memory allocation report at the termination of the program: **_make log_**
 
 
 ### **Exit Codes:**
