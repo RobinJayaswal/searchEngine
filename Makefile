@@ -9,7 +9,7 @@ OBJS = crawler.o web.o
 LIBS = -lcurl
 LLIBS = lib/cs50ds.a
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -DLOG
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOG)
 CC = gcc
 MAKE = make
 
@@ -24,6 +24,10 @@ web.o: web.h
 # build the library
 lib/cs50ds.a: 
 	cd lib; $(MAKE)
+
+# nondefault build, with logged process output
+log:
+	$(MAKE) LOG=-DLOG
 
 clean:
 	rm -f *~

@@ -51,7 +51,7 @@ bool pagesave(WebPage *page, char *pageDr);
 bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
 void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable);
 WebPage *webpageNew(char *url, int depth);
-void webpageDelete(WebPage *webpage);
+void webpageDelete(void *webpage);
 bool isWritableDirectory(char *dir);
 int numDigits(int number);
 int putInt(int num, FILE *fp);
@@ -96,7 +96,7 @@ int main(const int argc, char *argv[])
 
 	/* Argument Tests Passed. Initialize Data Structures */
 
-	bag_t *pageBag = bag_new(deleteFunc);                     
+	bag_t *pageBag = bag_new(webpageDelete);                     
 	hashtable_t *urlTable = hashtable_new(1000, deleteFunc);   
 
 	// create WebPage struct for initial seed url page 
@@ -269,7 +269,9 @@ WebPage *webpageNew(char *url, int currentDepth)
 		// failed to retrieve html
 	 	webpageDelete(page);
 	 	page = NULL;
+	 	return page;
 	}
+	// page fetch was valid, log the action
 	logAction("Fetched", (currentDepth < 0 ? 0 : currentDepth), url);
 	return page;
 }
@@ -278,14 +280,17 @@ WebPage *webpageNew(char *url, int currentDepth)
  * webpageDelete: deallocate memory
  * used by the webpage structure
  */
-void webpageDelete(WebPage *page)
+void webpageDelete(void *page)
 {
+	// explicit cast to WebPage type
+	WebPage *webpage = (WebPage*) page;
+
 	// deallocate page url, html
-	count_free(page->url);
-	free(page->html);
+	count_free(webpage->url);
+	free(webpage->html);
 
 	// deallocate page
-	count_free(page);
+	count_free(webpage);
 }
 
 /*
@@ -305,7 +310,6 @@ bool isWritableDirectory(char *dir)
 	// create file, check for opening error
 	if ( (fp = fopen(fn, "w")) == NULL) {
 		count_free(fn);
-		fclose(fp);
 		return false;
 	} else {
 		count_free(fn);
