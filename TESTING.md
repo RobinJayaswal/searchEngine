@@ -1,7 +1,3 @@
-TESTING for crawler program
-
-Robin Jayaswal, Kyle Dotterrer, 2016
-
 ### TESTING FOR CRAWLER.C
 
 ### CHECKING PAGE DIRECTORY ARGUMENT
@@ -11,7 +7,6 @@ Error: invalid page directory
 ### CHECKING MAX AND MIN DEPTH SPECIFICATIONS
 [jay@flume ~/cs50/labs/tse]$ crawler http://old-www.cs.dartmouth.edu/~cs50/index.html data 11
 Error: maxDepth must be between 0-10
-
 [jay@flume ~/cs50/labs/tse]$ crawler http://old-www.cs.dartmouth.edu/~cs50/index.html data -1
 Error: maxDepth must be between 0-10
 
@@ -221,6 +216,5 @@ tchToken":false});},{},{});
 /* cache key: enwiki:resourceloader:filter:minify-js:7:868e43d07ede2616d2d1dc3507cd8145 */
 }</script>
 <script>if(window.mw){
-
 
 
