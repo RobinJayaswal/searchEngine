@@ -11,6 +11,7 @@ Error: invalid page directory
 ### CHECKING MAX AND MIN DEPTH SPECIFICATIONS
 [jay@flume ~/cs50/labs/tse]$ crawler http://old-www.cs.dartmouth.edu/~cs50/index.html data 11
 Error: maxDepth must be between 0-10
+
 [jay@flume ~/cs50/labs/tse]$ crawler http://old-www.cs.dartmouth.edu/~cs50/index.html data -1
 Error: maxDepth must be between 0-10
 
