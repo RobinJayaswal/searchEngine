@@ -46,9 +46,10 @@
 #include "web.h"
 
 char* MALLOC_ERROR = "Error: memory allocation error";   // error message
+const int HASHTABLE_SIZE = 1000;                         // slots in table
 
 bool pagesave(WebPage *page, char *pageDr);
-bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
+void pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable);
 void processURL(char *url, int depth, bag_t *pageBag, hashtable_t *urlTable);
 WebPage *webpageNew(char *url, int depth);
 void webpageDelete(void *webpage);
@@ -97,7 +98,7 @@ int main(const int argc, char *argv[])
 	/* Argument Tests Passed. Initialize Data Structures */
 
 	bag_t *pageBag = bag_new(webpageDelete);                     
-	hashtable_t *urlTable = hashtable_new(1000, deleteFunc);   
+	hashtable_t *urlTable = hashtable_new(HASHTABLE_SIZE, deleteFunc);   
 
 	// create WebPage struct for initial seed url page 
 	WebPage *seedPage;
@@ -124,7 +125,14 @@ int main(const int argc, char *argv[])
 	while ( (nextPage = bag_extract(pageBag)) != NULL) {
 		
 		// extract the next page and save it to directory
-		pagesave(nextPage, pageDirectory);
+		bool saveSuccess = pagesave(nextPage, pageDirectory);
+
+#ifdef LOG
+		// if we are logging, alert user if writing to file encountered issue
+		if (!saveSuccess)
+			fprintf(stderr, "Warning: May have been problem "
+				"writing to file for page %s\n", nextPage->url);
+#endif
 
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls
@@ -193,7 +201,7 @@ bool pagesave(WebPage *page, char *pageDr)
  * pagescan: scan the given webpage for links; insert each
  * unseen, valid link into the bag for later extraction
  */
-bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
+void pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 {
 	int pos = 0;                      // position in html string
 	char *result = NULL;              // will hold new url
@@ -217,8 +225,6 @@ bool pagescan(WebPage *page, bag_t *pageBag, hashtable_t *urlTable)
 	// free result if GetNextURL fails
 	if (result != NULL)
 		free(result);
-
-	return true;
 }
 
 /*

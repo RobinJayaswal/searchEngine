@@ -1,4 +1,9 @@
-### TESTING FOR CRAWLER.C
+TESTING for crawler.c
+Robin Jayaswal, Kyle Dotterrer
+
+### INITIAL MAKE WITH LOG FLAG
+
+[jay@flume ~/cs50/labs/tse]$ make log 
 
 ### CHECKING PAGE DIRECTORY ARGUMENT
 
@@ -166,7 +171,7 @@ cd data; rm -f *
 
 
 
-[jay@flume ~/cs50/labs/tse]$ make
+[jay@flume ~/cs50/labs/tse]$ make log
 
 gcc -Wall -pedantic -std=c11 -ggdb -DLOG   -c -o crawler.o crawler.c
 
