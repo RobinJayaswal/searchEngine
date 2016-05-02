@@ -8,18 +8,27 @@
 The crawler is a subsystem of the TSE. Crawler crawls a website and retrieves webpages starting with a specified URL. It parses the initial webpage, extracts any embedded href URLs and retrieves those pages, and crawls the pages found at those URLs. The crawler limits itself to maxDepth hops from the seed URL. When the crawling process is complete, the indexing of the collected documents can begin.
 
 
-### **Imported Modules / Linked Libraries**
-* The libcurl library is used to handle webpage setup, requests, and cleanup
-* The memory module (Courtesy of David Kotz) provides program process logging functionalities (See module README for additional information)
-* The hashtable module (Courtesy of Kyle Dotterrer) provides basic hashtable creation, insertion, searching, and deletion functionalities (See module README for additional information) 
-* The bag module (Courtesy of Kyle Dotterrer) provides basic bag creation, insertion, extraction, and deletion functionalities (See module README for additional information)
-
-
 ### **Program Compilation**
 
 Within the tse/ directory, the default crawler can be compiled with the command: **_make_**
 
 Specifying the following command line will display output of Crawler processes, as well as print out a memory allocation report at the termination of the program: **_make log_**
+
+
+### **Usage**
+
+crawler seedURL pageDirectory maxDepth
+
+Where:
+* seedPage is the page from which web crawling commences
+* pageDirectory is the directory path where pages will be stored
+* maxDepth is the maximum page depth that the crawler will explore; a maxDepth of 0 tells the crawler to only fetch seedPage, a maxDepth of 1 tells crawler to fetch pages linked from seed, etc
+
+### **Imported Modules / Linked Libraries**
+* The libcurl library is used to handle webpage setup, requests, and cleanup
+* The memory module (Courtesy of David Kotz) provides program process logging functionalities (See module README for additional information)
+* The hashtable module (Courtesy of Kyle Dotterrer) provides basic hashtable creation, insertion, searching, and deletion functionalities (See module README for additional information) 
+* The bag module (Courtesy of Kyle Dotterrer) provides basic bag creation, insertion, extraction, and deletion functionalities (See module README for additional information)
 
 
 ### **Assumptions**
