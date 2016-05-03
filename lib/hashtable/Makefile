@@ -9,12 +9,11 @@ CC = gcc
 MAKE = make
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
 
-OBJS = hashtable.o jhash.o list.o
+OBJS = hashtable.o jhash.o 
 LIBS = 
 
 
-hashtable.o: hashtable.h jhash.h list.h
-list.o: list.h
+hashtable.o: hashtable.h jhash.h ../list/list.h
 jhash.o: jhash.h
 
 

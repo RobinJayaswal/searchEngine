@@ -6,7 +6,6 @@
 
 MAKE = make
 
-
 all:
 	# build the libraries
 	$(MAKE) -C lib
@@ -23,4 +22,4 @@ clean:
 	cd lib; $(MAKE) clean
 	cd crawler; $(MAKE) clean
 	cd indexer; $(MAKE) clean
-	#cd querier; $(MAKE) clean
+	cd querier; $(MAKE) clean

@@ -12,8 +12,7 @@ OBJS = crawler.o
 LIBS = -lcurl
 LLIBS = $L/cs50ds.a $C/common.a
 
-
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOG) 
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C -I$L $(LOG) 
 CC = gcc
 MAKE = make
 

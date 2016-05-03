@@ -41,7 +41,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "../lib/memory/memory.h"
-#include "hashtable.h"
+#include "../lib/hashtable/hashtable.h"
 #include "../lib/bag/bag.h"
 #include "../common/web.h"
 
@@ -135,8 +135,6 @@ int main(const int argc, char *argv[])
 				"writing to file for page %s\n", nextPage->url);
 			#endif
 		}
-
-
 
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls
@@ -371,7 +369,9 @@ int putInt(int num, FILE *fp)
  */
 void deleteFunc(void *data)
 {
-	;
+	if (data != NULL) {
+		fprintf(stderr, "Error: hashtable_delete called with non-null data\n");
+	}
 }
 
 /*

@@ -5,8 +5,7 @@
 #
 # Robin Jayaswal, Kyle Dotterrer, April 2016
 
-OBJS = memory/memory.o list/list.o hashtable/hashtable.o 
-OBJS = hashtable/jhash.o hashtable/list.o bag/bag.o counters/counters.o
+OBJS = memory/memory.o list/list.o hashtable/hashtable.o bag/bag.o counters/counters.o hashtable/jhash.o
 LIB = cs50ds.a
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
@@ -30,7 +29,7 @@ counters/counters.o: counters/counters.c counters/counters.h
 list/list.o: list/list.c list/list.h
 	cd list; $(MAKE) list.o
 
-hashtable/hashtable.o: hashtable/hashtable.c hashtable/hashtable.h
+hashtable/hashtable.o: hashtable/hashtable.c hashtable/hashtable.h 
 	cd hashtable; $(MAKE) hashtable.o
 
 # clean library and subdirectories

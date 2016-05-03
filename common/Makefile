@@ -17,9 +17,7 @@ $(LIB): $(OBJS)
 
 # object file dependencies
 file.o: file.c file.h
-
 web.o: web.c web.h
-
 word.o: word.c word.h
 
 

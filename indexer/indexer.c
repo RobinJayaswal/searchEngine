@@ -11,8 +11,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-int parseArguments(const int argc, char *argv[]);
-bool isCrawlerDirectory(char *dir);
+static int parseArguments(const int argc, char *argv[]);
+static bool isCrawlerDirectory(char *dir);
+static void *checkPtr(void *ptr, char *message);
 
 int main(const int argc, char* argv[])
 {
@@ -34,7 +35,7 @@ int main(const int argc, char* argv[])
 /*
  * parseArguments:
  */
-int parseArguments(const int argc, char *argv[])
+static int parseArguments(const int argc, char *argv[])
 {
 	char *progName = argv[0];
 
@@ -54,7 +55,7 @@ int parseArguments(const int argc, char *argv[])
 /*
  * isCrawlerDirectory:
  */
-bool isCrawlerDirectory(char *dir)
+static bool isCrawlerDirectory(char *dir)
 {
 	char *fn = malloc(strlen(dir) + 10);
 	FILE *fp;
@@ -71,4 +72,17 @@ bool isCrawlerDirectory(char *dir)
 		fclose(fp);
 		return true;
 	}
+}
+
+/*
+ * checkPtr:
+ * Credit to David Kotz for function inspiration
+ */
+static void *checkPtr(void *ptr, char *message)
+{
+	if (ptr == NULL) {
+		fprintf(stderr, "Error: %s\n", message);
+		exit(99);
+	}
+	return ptr;
 }

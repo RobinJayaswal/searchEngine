@@ -40,6 +40,5 @@ bool hashtable_insert(hashtable_t *ht, char *key, void *data);
  */
 void hashtable_delete(hashtable_t *ht);
 
-
 #endif // __HASHTABLE_H
 

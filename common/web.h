@@ -13,11 +13,10 @@
  * This file contains the web/html processing functionality.
  *
  * ========================================================================= */
-#ifndef __WEB_H
-#define __WEB_H
+#ifndef WEB_H
+#define WEB_H
 
-#include <stdbool.h> // bool type
-#include <stddef.h> // size_t
+#include <stdbool.h>
 
 static const int INTERVAL_PER_FETCH = 1;   // seconds between fetches
 
@@ -117,4 +116,4 @@ bool IsInternalURL(char *url);
 static const
   char INTERNAL_URL_PREFIX[] = "http://old-www.cs.dartmouth.edu/";
 
-#endif // __WEB_H
+#endif // WEB_H

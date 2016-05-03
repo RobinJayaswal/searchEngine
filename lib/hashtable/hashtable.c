@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "hashtable.h"
-#include "list.h"
+#include "../list/list.h"
 #include "jhash.h"
 
 /*============================= global types ================================*/
