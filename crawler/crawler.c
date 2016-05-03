@@ -40,10 +40,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
-#include "lib/memory/memory.h"
-#include "lib/hashtable/hashtable.h"
-#include "lib/bag/bag.h"
-#include "web.h"
+#include "../lib/memory/memory.h"
+#include "hashtable.h"
+#include "../lib/bag/bag.h"
+#include "../common/web.h"
 
 char* MALLOC_ERROR = "Error: memory allocation error";   // error message
 const int HASHTABLE_SIZE = 1000;                         // slots in table
@@ -127,12 +127,16 @@ int main(const int argc, char *argv[])
 		// extract the next page and save it to directory
 		bool saveSuccess = pagesave(nextPage, pageDirectory);
 
-#ifdef LOG
+
 		// if we are logging, alert user if writing to file encountered issue
-		if (!saveSuccess)
+		if (!saveSuccess) {
+			#ifdef LOG	
 			fprintf(stderr, "Warning: May have been problem "
 				"writing to file for page %s\n", nextPage->url);
-#endif
+			#endif
+		}
+
+
 
 		if (nextPage->depth < maxDepth) {
 			// depth valid, scan page for more urls

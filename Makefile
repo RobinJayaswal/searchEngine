@@ -1,37 +1,26 @@
-# Makefile for 'crawler' module
+# makefile for tiny search engine
+#  recursively build all subdirectories
 #
-# Template courtesy of David Kotz, April 2016
-# 
-# Robin Jayaswal, Kyle Dotterrer, April 2016
+# Robin Jayaswal, Kyle Dotterrer, May 2016 
 
-PROG = crawler
-OBJS = crawler.o web.o
-LIBS = -lcurl
-LLIBS = lib/cs50ds.a
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(LOG)
-CC = gcc
 MAKE = make
 
-# build the crawler
-$(PROG): $(OBJS) $(LLIBS)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-# crawler source dependencies; add others as needed
-crawler.o: web.h
-web.o: web.h
+all:
+	# build the libraries
+	$(MAKE) -C lib
+	$(MAKE) -C common
 
-# build the library
-lib/cs50ds.a: 
-	cd lib; $(MAKE)
-
-# nondefault build, with logged process output
-log:
-	$(MAKE) LOG=-DLOG
+	# build programs
+	$(MAKE) -C crawler
+	$(MAKE) -C indexer
+	$(MAKE) -C querier
 
 clean:
-	rm -f *~
-	rm -f *.o
-	rm -f $(PROG)
-	cd lib; $(MAKE) clean
 	cd data; rm -f *
+	cd common; $(MAKE) clean
+	cd lib; $(MAKE) clean
+	cd crawler; $(MAKE) clean
+	cd indexer; $(MAKE) clean
+	#cd querier; $(MAKE) clean

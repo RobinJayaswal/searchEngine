@@ -19,32 +19,32 @@
                                          // parsing html without is a pain
 
 // #include <stdio.h>            // io functions
-#include <stdlib.h>       // free, calloc, realloc
-#include <stdbool.h>          // bool type
-#include <ctype.h>        // tolower, isspace
-#include <unistd.h>       // sleep
-#include <string.h>       // strcasestr, strchr, strrchr,
-                  // strncasecmp, memset, strlen,
-                  // memcpy, strnlen, strncpy,
-                  // strcmp, strdup, strndup, strcat,
-                  // strpbrk
+#include <stdlib.h>	      // free, calloc, realloc
+#include <stdbool.h>	      // bool type
+#include <ctype.h>	      // tolower, isspace
+#include <unistd.h>	      // sleep
+#include <string.h>	      // strcasestr, strchr, strrchr,
+			      // strncasecmp, memset, strlen,
+			      // memcpy, strnlen, strncpy,
+			      // strcmp, strdup, strndup, strcat,
+			      // strpbrk
 
-#include <curl/curl.h>        // curl to fetch web pages
+#include <curl/curl.h>	      // curl to fetch web pages
 
-#include "web.h"          // web functionality
+#include "web.h"	      // web functionality
 
 // ------------------ Private types
 struct URL {
     char* scheme;             // http://
-    char* user;           // username:password@
-    char* host;           // www.example.com
-    char* path;           // /path/to/file.html
-    char* query;          // ?name1=val1&name2=val2
-    char* fragment;       // #top
+    char* user;		      // username:password@
+    char* host;		      // www.example.com
+    char* path;		      // /path/to/file.html
+    char* query;	      // ?name1=val1&name2=val2
+    char* fragment;	      // #top
 };
 
-#define NUM_EXTS (3)             // size of EXTS array
-static const char* EXTS[NUM_EXTS] = {    // valid extensions
+#define NUM_EXTS (3)			 // size of EXTS array
+static const char* EXTS[NUM_EXTS] = {	 // valid extensions
   "html",
   "jsp",
   "php"
@@ -83,7 +83,7 @@ bool GetWebPage(WebPage* page)
     static const int MAX_TRY=3;   // maximum attempts to get a webpage
     static char errbuf[CURL_ERROR_SIZE];     // buffer for error messages
     int tries = 0;                           // number of attempts at curl
-    bool status = true;              // return value
+    bool status = true;			     // return value
     CURL* curl_handle;
     CURLcode res;                            // curl response code
 
@@ -93,9 +93,8 @@ bool GetWebPage(WebPage* page)
     // allocate space for the html, curl will realloc as needed
     page->html = calloc(1, sizeof(char));
     page->html_len = 0;
-    
+
     // init curl session
-    curl_global_init(CURL_GLOBAL_DEFAULT);
     curl_handle = curl_easy_init();
 
     // specify url
@@ -137,7 +136,6 @@ bool GetWebPage(WebPage* page)
 
     // cleanup curl stuff
     curl_easy_cleanup(curl_handle);
-    curl_global_cleanup();
 
     return status;
 }
@@ -764,33 +762,33 @@ static char *FixupRelativeURL(char *base, char *rel, size_t len)
     }
 
     if (tmp.host) {                           // host
-        strcat(abs_url, tmp.host);        // always ends in slash
+        strcat(abs_url, tmp.host);	      // always ends in slash
     }
 
     // do we have a relative url?
     if (rel) { // yes, add it to the abs_url
         // is the relative URL relative to domain root, or relative to base?
         if (rel[0] == '/') {
-        // relative to domain root
-        strncat(abs_url, rel, len);      // add relative url
-    } else {
-        // relative to base_url
-        // add the base path up to the right-most '/'
-        if (tmp.path
-        && (slash = strrchr(tmp.path, '/'))
-        && (slash != tmp.path)) {
-            strncat(abs_url, tmp.path, slash - tmp.path);
-        }
+	    // relative to domain root
+	    strncat(abs_url, rel, len);	     // add relative url
+	} else {
+	    // relative to base_url
+	    // add the base path up to the right-most '/'
+	    if (tmp.path
+		&& (slash = strrchr(tmp.path, '/'))
+		&& (slash != tmp.path)) {
+	        strncat(abs_url, tmp.path, slash - tmp.path);
+	    }
             strcat(abs_url, "/");            // separate base and relative path
-        strncat(abs_url, rel, len);      // add relative url
+	    strncat(abs_url, rel, len);	     // add relative url
         }
     } else { // no relative url; finish the abs_url
       // DFK: not sure this case occurs, or if it does, what action to take.
       // add the base path up to the right-most '/'
       if (tmp.path
-      && (slash = strrchr(tmp.path, '/'))
-      && (slash != tmp.path)) {
-    strncat(abs_url, tmp.path, slash - tmp.path);
+	  && (slash = strrchr(tmp.path, '/'))
+	  && (slash != tmp.path)) {
+	strncat(abs_url, tmp.path, slash - tmp.path);
       }
     }
 
@@ -865,4 +863,3 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 
     return realsize;
 }
-

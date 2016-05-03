@@ -5,7 +5,8 @@
 #
 # Robin Jayaswal, Kyle Dotterrer, April 2016
 
-OBJS = memory/memory.o list/list.o hashtable/hashtable.o hashtable/jhash.o hashtable/list.o bag/bag.o counters/counters.o
+OBJS = memory/memory.o list/list.o hashtable/hashtable.o 
+OBJS = hashtable/jhash.o hashtable/list.o bag/bag.o counters/counters.o
 LIB = cs50ds.a
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
