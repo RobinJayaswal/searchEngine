@@ -39,4 +39,11 @@ bool list_insert(list_t *list, char *key, void *data);
  */
 void list_delete(list_t *list);
 
+/* Iterate over all items in list (in undefined order):
+ * call itemfunc for each item, passing (arg, key, data).
+ */
+void list_iterate(list_t *list,
+		  void (*itemfunc)(void *arg, char *key, void *data),
+		  void *arg);
+
  #endif // __LIST_H

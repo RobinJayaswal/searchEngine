@@ -37,4 +37,18 @@ int counters_get(counters_t *ctrs, int key);
  */
 void counters_delete(counters_t *ctrs);
 
+/* Set value of the counter indicated by key.
+ * If the key does not yet exist, create a counter for it.
+ * NULL counters is ignored.
+ */
+void counters_set(counters_t *ctrs, int key, int count);
+
+/* Iterate over all counters in the set (in undefined order):
+ * call itemfunc for each item, with (arg, key, count).
+ */
+void counters_iterate(counters_t *ctrs,
+		      void (*itemfunc)(void *arg, int key, int count),
+		      void *arg);
+
+
 #endif // __COUNTERS_H

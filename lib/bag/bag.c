@@ -142,6 +142,22 @@ void bag_delete(bag_t *bag)
 	free(bag);
 }
 
+/***************** bag_iterate ******************/
+void bag_iterate(bag_t *bag,
+		 void (*itemfunc)(void *arg, void *data),
+		 void *arg)
+{
+	if (bag == NULL)
+		return;
+
+	bag_t *current = bag->head;
+
+	while (current != NULL) {
+		itemfunc(arg, current->data);
+		current = current->next;
+	}
+}
+
 
 
 

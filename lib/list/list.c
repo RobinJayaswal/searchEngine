@@ -210,3 +210,21 @@ bool is_empty(list_t *list)
 	// list empty only when both NULL pointers
 	return list->head == NULL && list->tail == NULL;
 }
+
+/**************** list_iterate *****************/
+void list_iterate(list_t *list,
+		  void (*itemfunc)(void *arg, char *key, void *data),
+		  void *arg)
+{
+	if (list == NULL)
+		return;
+
+	listnode_t *current = list->head;
+
+	while (current != NULL) {
+		itemfunc(arg, current->key, current->data);
+		current = current->next;
+	}
+}
+
+

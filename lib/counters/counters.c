@@ -147,5 +147,46 @@ void counters_delete(counters_t *ctrs)
 	free(ctrs);
 }
 
+/**************** counters_set ******************/
+void counters_set(counters_t *ctrs, int key, int count)
+{
+	if (ctrs == NULL)
+		return;
+
+	counter_t *current = ctrs->head;
+
+	while (current != NULL) {
+
+		if (current->key == key) {
+			// found it
+			current->count = count;
+			return;
+		}
+		current = current->next;
+	}
+	// didnt find it, create new and splice in
+	counter_t *newCounter = counter_new(key);
+
+	newCounter->next = ctrs->head;
+	newCounter->count = count;
+	ctrs->head = newCounter;
+}
+
+/************** counters_iterate ***************/
+void counters_iterate(counters_t *ctrs, 
+						void (*itemfunc)(void *arg, int key, int count),
+		      			void *arg) 
+{
+	if (ctrs == NULL)
+		return;
+
+	counter_t *current = ctrs->head;
+
+	while (current != NULL) {
+		itemfunc(arg, current->key, current->count);
+	}
+}
+
+
 
 

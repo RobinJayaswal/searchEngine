@@ -119,6 +119,20 @@ void hashtable_delete(hashtable_t *ht)
 	free(ht);
 }
 
+/************** hashtable_iterate ***************/
+void hashtable_iterate(hashtable_t *ht, 
+		       void (*itemfunc)(void *arg, char *key, void *data),
+		       void *arg)
+{
+	if (ht == NULL) 
+		return;
+
+	for (int i = 0; i < ht->size; i++) {
+		
+		list_iterate(ht->table[i], itemfunc, arg);
+	}
+}
+
 
 
 

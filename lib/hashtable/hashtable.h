@@ -40,5 +40,12 @@ bool hashtable_insert(hashtable_t *ht, char *key, void *data);
  */
 void hashtable_delete(hashtable_t *ht);
 
+/* Iterate over all items in hashtable (in undefined order):
+ * call itemfunc for each item, with (arg, key, data).
+ */
+void hashtable_iterate(hashtable_t *ht, 
+		       void (*itemfunc)(void *arg, char *key, void *data),
+		       void *arg);
+
 #endif // __HASHTABLE_H
 
