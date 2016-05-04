@@ -21,11 +21,14 @@ const int HASHTABLE_SIZE = 10000;
 
 
 static void indexBuild(char *pageDir, hashtable_t *index);
+static void indexSave(char *indexFile, hashtable_t *index);
+void indexWrite(void *arg, char *key, void *data);
+void printCounterPair(void *arg, int key, int count);
 static int parseArguments(const int argc, char *argv[]);
 static bool isCrawlerDirectory(char *dir);
 int numDigits(int number);
 static void hashDeleteFunc(void *data);
-static void *checkPtr(void *ptr, char *message);
+// static void *checkPtr(void *ptr, char *message);
 
 
 
@@ -45,7 +48,12 @@ int main(const int argc, char* argv[])
 
 	hashtable_t *index = hashtable_new(HASHTABLE_SIZE, hashDeleteFunc);
 
+	// build the index
 	indexBuild(pageDir, index);
+
+	// save to file indexFN
+	indexSave(indexFN, index);
+
 	
 	hashtable_delete(index);
 
@@ -68,18 +76,20 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 
 		char *html = file2string(fp);
 
-		int pos = 0;
+		int pos = 2;
 		char *word;
-		while ( (pos = GetNextWord(html, pos, &word)) == -1 ) {
+		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
 			char *normalized = NormalizeWord(word);
 			//NormalizeWord(word);
-			counters_t *wordCounters = hashtable_find(index, normalized);
-			if (wordCounters){
-				counters_add(wordCounters, docID);
-			} else {
-				counters_t *newC = counters_new();
-				counters_add(newC, docID);
-				hashtable_insert(index, normalized, newC);
+			if (strlen(normalized) > 2){
+				counters_t *wordCounters = hashtable_find(index, normalized);
+				if (wordCounters){
+					counters_add(wordCounters, docID);
+				} else {
+					counters_t *newC = counters_new();
+					counters_add(newC, docID);
+					hashtable_insert(index, normalized, newC);
+				}
 			}
 			free(word);
 		}
@@ -94,8 +104,47 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID), MALLOC_ERR);
 		sprintf(fn, "%s/%i", pageDir, docID);
 	}
+	count_free(fn);
 }
 
+
+static void indexSave(char *indexFile, hashtable_t *index)
+{
+	printf("Saving index\n");
+	FILE *fp = fopen(indexFile, "w");
+	hashtable_iterate(index, indexWrite, fp);
+	fclose(fp);
+}
+
+void indexWrite(void *arg, char *key, void *data)
+{
+	// needs to take the the current word as arg. Also needs to
+	// know if it is supposed to write the word on the line.
+	// lastly, needs to know the file to write to. 
+	// The key of the list is the word. The data is the counters struct
+
+	FILE *fp = arg;
+	char *word = key;
+	counters_t *counters = data;
+
+	if (word != NULL && counters != NULL){
+		fprintf(fp, "%s", word);
+
+		counters_iterate(counters, printCounterPair, fp);
+
+		fprintf(fp, "\n");
+	}
+}
+
+void printCounterPair(void *arg, int key, int count)
+{
+	if (arg != NULL) {
+		FILE *fp = arg;
+		int docID = key;
+
+		fprintf(fp, " %d %d", docID, count);
+	}
+}
 
 /*
  * parseArguments:
@@ -165,11 +214,11 @@ static void hashDeleteFunc(void *data)
  * checkPtr:
  * Credit to David Kotz for function inspiration
  */
-static void *checkPtr(void *ptr, char *message)
-{
-	if (ptr == NULL) {
-		fprintf(stderr, "Error: %s\n", message);
-		exit(99);
-	}
-	return ptr;
-}
+// static void *checkPtr(void *ptr, char *message)
+// {
+// 	if (ptr == NULL) {
+// 		fprintf(stderr, "Error: %s\n", message);
+// 		exit(99);
+// 	}
+// 	return ptr;
+// }

@@ -216,9 +216,10 @@ void list_iterate(list_t *list,
 		  void (*itemfunc)(void *arg, char *key, void *data),
 		  void *arg)
 {
-	if (list == NULL || itemfunc == NULL)
+	if (list == NULL || itemfunc == NULL){
 		// invalid arguments
 		return;
+	}
 
 	listnode_t *current = list->head;
 
