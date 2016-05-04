@@ -147,13 +147,14 @@ void bag_iterate(bag_t *bag,
 		 void (*itemfunc)(void *arg, void *data),
 		 void *arg)
 {
-	if (bag == NULL)
+	if (bag == NULL || itemfunc == NULL)
+		// invalid arguments
 		return;
 
 	bagitem_t *current = bag->head;
 
 	while (current != NULL) {
-		itemfunc(arg, current->data);
+		(*itemfunc)(arg, current->data);
 		current = current->next;
 	}
 }

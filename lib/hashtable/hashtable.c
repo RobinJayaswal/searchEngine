@@ -124,11 +124,12 @@ void hashtable_iterate(hashtable_t *ht,
 		       void (*itemfunc)(void *arg, char *key, void *data),
 		       void *arg)
 {
-	if (ht == NULL) 
+	if (ht == NULL || itemfunc == NULL) 
+		// invalid arguments
 		return;
 
 	for (int i = 0; i < ht->size; i++) {
-		
+		// iterate through list in each slot
 		list_iterate(ht->table[i], itemfunc, arg);
 	}
 }

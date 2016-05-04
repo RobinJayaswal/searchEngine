@@ -177,13 +177,15 @@ void counters_iterate(counters_t *ctrs,
 						void (*itemfunc)(void *arg, int key, int count),
 		      			void *arg) 
 {
-	if (ctrs == NULL)
+	if (ctrs == NULL || itemfunc == NULL)
+		// invalid arguments
 		return;
 
 	counter_t *current = ctrs->head;
 
 	while (current != NULL) {
-		itemfunc(arg, current->key, current->value);
+		(*itemfunc)(arg, current->key, current->value);
+		current = current->next;
 	}
 }
 
