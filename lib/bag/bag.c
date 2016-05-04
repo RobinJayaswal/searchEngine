@@ -150,7 +150,7 @@ void bag_iterate(bag_t *bag,
 	if (bag == NULL)
 		return;
 
-	bag_t *current = bag->head;
+	bagitem_t *current = bag->head;
 
 	while (current != NULL) {
 		itemfunc(arg, current->data);

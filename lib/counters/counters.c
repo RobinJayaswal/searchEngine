@@ -159,7 +159,7 @@ void counters_set(counters_t *ctrs, int key, int count)
 
 		if (current->key == key) {
 			// found it
-			current->count = count;
+			current->value = count;
 			return;
 		}
 		current = current->next;
@@ -168,7 +168,7 @@ void counters_set(counters_t *ctrs, int key, int count)
 	counter_t *newCounter = counter_new(key);
 
 	newCounter->next = ctrs->head;
-	newCounter->count = count;
+	newCounter->value = count;
 	ctrs->head = newCounter;
 }
 
@@ -183,7 +183,7 @@ void counters_iterate(counters_t *ctrs,
 	counter_t *current = ctrs->head;
 
 	while (current != NULL) {
-		itemfunc(arg, current->key, current->count);
+		itemfunc(arg, current->key, current->value);
 	}
 }
 
