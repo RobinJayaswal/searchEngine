@@ -23,7 +23,11 @@ void indexSave(char *indexFile, hashtable_t *index)
 }
 
 /*
- * indexWrite:
+ * indexWrite: iterator function for hashtable containing the index
+ * arg: file to print index to
+ * key: word in indexer
+ * data: counters struct for that word
+ * Makes call to counters_iterate to print counter key/val pairs to file
  */
 static void indexWrite(void *arg, char *key, void *data)
 {
@@ -41,7 +45,10 @@ static void indexWrite(void *arg, char *key, void *data)
 }
 
 /*
- * printCounterPair: 
+ * printCounterPair: iterator function for counters, 
+ * prints key/count pairs to file
+ * arg: file to output to
+ * key and count are just the key and count of a counter
  */
 static void printCounterPair(void *arg, int key, int count)
 {

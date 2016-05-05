@@ -22,7 +22,7 @@
  *      > indexSave: 
  * 		> indexWrite:
  * 		> printCounterPair:
- * 		> parseArguments:
+ * 		> parseArguments:  
  * 		> isCrawlerDirectory:
  * 		> numDigits: 
  * 		> hashDeleteFunc: 
@@ -46,9 +46,11 @@
 #include "../common/word.h"
 #include "../common/index.h"
 
+/****************** CONSTANTS *******************/
 char *MALLOC_ERR = "Error: memory allocation error";    // error message
 const int HASHTABLE_SIZE = 10000;                       // number of slots
 
+/****************** FUNCTION PROTOTYPES *******************/
 static void indexBuild(char *pageDir, hashtable_t *index);
 static int parseArguments(const int argc, char *argv[]);
 static bool isCrawlerDirectory(char *dir);
@@ -56,6 +58,7 @@ int numDigits(int number);
 static void hashDeleteFunc(void *data);
 
 
+/****************** main() *******************/
 int main(const int argc, char* argv[])
 {
 	int argStatus;
@@ -96,19 +99,22 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 	char *fn = count_malloc_assert(strlen(pageDir)+3, MALLOC_ERR);
 	FILE *fp;
 
+	// construct filename for initial webpage file
 	sprintf(fn, "%s/%i", pageDir, docID);
 
 	while ( (fp = fopen(fn, "r")) != NULL) {
-
+		// get files content into a string
 		char *html = file2string(fp);
 
-		int pos = 2;
+		int pos = 2;	// skip first two words (url & depth)
 		char *word;
+		// loop through words in html, normalize, update index
 		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
 			char *normalized = NormalizeWord(word);
 			if (strlen(normalized) > 2){
 				counters_t *wordCounters = hashtable_find(index, normalized);
 				if (wordCounters){
+					// word already in index, increment counter (or create new)
 					counters_add(wordCounters, docID);
 				} else {
 					counters_t *newC = counters_new();
@@ -116,18 +122,30 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 					hashtable_insert(index, normalized, newC);
 				}
 			}
+			// free word on every iteration
 			free(word);
 		}
-		fclose(fp);
 
-		docID++;
+		// close file and free strings that will take new values
+		fclose(fp);
 
 		free(html);
 		count_free(fn);
 
-		// construct new filename
-		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID), MALLOC_ERR);
-		sprintf(fn, "%s/%i", pageDir, docID);
+		docID++;
+
+		// construct new filename for next iteration
+		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID) + 3, MALLOC_ERR);
+		printf("%p\n", (void *)&fn);
+
+		// need to determine if we should add slash to end of pageDir or nod
+		char *slash;
+		// use pointer arithmetic to get last char in page dir
+		char *lastChar = pageDir + strlen(pageDir) - 1;
+		slash = (*lastChar == '/') ? "" : "/";
+
+		sprintf(fn, "%s%s%i", pageDir, slash, docID);
+		printf("%s\n", fn);
 	}
 	count_free(fn);
 }
@@ -141,7 +159,7 @@ static int parseArguments(const int argc, char *argv[])
 {
 	char *progName = argv[0];
 
-	if (argc != 3) {
+	if (argc != 3) {	
 		fprintf(stderr, "Error: invalid arguments\n");
 		fprintf(stderr, "usage: %s pageDirectory indexFilename\n", progName);
 		return 1;
@@ -185,11 +203,11 @@ static bool isCrawlerDirectory(char *dir)
  */
 int numDigits(int number)
 {
-	// integer division
+	// integer division checks if 1 digit
 	if ( (number / 10 ) == 0 ) {
 		return 1;
 	}
-	else {
+	else {	// recursively add digits of number without the first digit
 		return 1 + numDigits(number / 10);
 	}
 }
