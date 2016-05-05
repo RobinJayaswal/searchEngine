@@ -50,7 +50,8 @@
 char *MALLOC_ERR = "Error: memory allocation error";    // error message
 const int HASHTABLE_SIZE = 10000;                       // number of slots
 
-/****************** FUNCTION PROTOTYPES *******************/
+
+/************* FUNCTION PROTOTYPES **************/
 static void indexBuild(char *pageDir, hashtable_t *index);
 static int parseArguments(const int argc, char *argv[]);
 static bool isCrawlerDirectory(char *dir);
@@ -58,7 +59,7 @@ int numDigits(int number);
 static void hashDeleteFunc(void *data);
 
 
-/****************** main() *******************/
+/******************* main() ********************/
 int main(const int argc, char* argv[])
 {
 	int argStatus;
@@ -108,11 +109,16 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 
 		int pos = 2;	// skip first two words (url & depth)
 		char *word;
+
 		// loop through words in html, normalize, update index
 		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
 			char *normalized = NormalizeWord(word);
+
 			if (strlen(normalized) > 2){
+
+				// variable NULL if word not found
 				counters_t *wordCounters = hashtable_find(index, normalized);
+
 				if (wordCounters){
 					// word already in index, increment counter (or create new)
 					counters_add(wordCounters, docID);
