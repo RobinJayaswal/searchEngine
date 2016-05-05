@@ -1,6 +1,35 @@
 /* ============================================================================
  *
- * indexer.c 
+ * indexer.c - build inverted index from documents in specified directory
+ *
+ * usage: indexer pageDirectory indexFilename
+ *
+ * where:
+ * 		> pageDirectory is the directory where the files produced by
+ * 		  crawler are located
+ *      > indexFilename is the name of the file to which the index 
+ *        will be written
+ *
+ * output: Indexer builds an inverted document index from a collection
+ *         of text files located in the page directory. Once the index 
+ *         is built, the result is written to the output file specified
+ *         by the index filename argument. The format of the index file
+ *         is: 
+ *				WORD docID occurences [docID occurences]...
+ *
+ * functions:
+ * 		> indexBuild:
+ *      > indexSave: 
+ * 		> indexWrite:
+ * 		> printCounterPair:
+ * 		> parseArguments:
+ * 		> isCrawlerDirectory:
+ * 		> numDigits: 
+ * 		> hashDeleteFunc: 
+ *
+ * stdin: none
+ * stdout: none
+ * stderr: error messages
  *
  * Robin Jayaswal, Kyle Dotterrer, May 2016
  *
@@ -16,8 +45,8 @@
 #include "../common/file.h"
 #include "../common/word.h"
 
-char *MALLOC_ERR = "Error: memory allocation error";
-const int HASHTABLE_SIZE = 10000;
+char *MALLOC_ERR = "Error: memory allocation error";    // error message
+const int HASHTABLE_SIZE = 10000;                       // number of slots
 
 
 static void indexBuild(char *pageDir, hashtable_t *index);
@@ -29,7 +58,6 @@ static bool isCrawlerDirectory(char *dir);
 int numDigits(int number);
 static void hashDeleteFunc(void *data);
 // static void *checkPtr(void *ptr, char *message);
-
 
 
 int main(const int argc, char* argv[])
@@ -54,7 +82,7 @@ int main(const int argc, char* argv[])
 	// save to file indexFN
 	indexSave(indexFN, index);
 
-	
+	// cleanup
 	hashtable_delete(index);
 
 	exit(0);
@@ -62,7 +90,9 @@ int main(const int argc, char* argv[])
 
 
 /*
- * indexBuild: builds the index
+ * indexBuild: builds the index; iterate over each
+ * file in the page directory, read each word from file
+ * and insert it into the index
  */
 static void indexBuild(char *pageDir, hashtable_t *index)
 {
@@ -107,7 +137,9 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 	count_free(fn);
 }
 
-
+/*
+ * indexSave: 
+ */
 static void indexSave(char *indexFile, hashtable_t *index)
 {
 	printf("Saving index\n");
@@ -116,6 +148,9 @@ static void indexSave(char *indexFile, hashtable_t *index)
 	fclose(fp);
 }
 
+/*
+ * indexWrite:
+ */
 void indexWrite(void *arg, char *key, void *data)
 {
 	// needs to take the the current word as arg. Also needs to
@@ -136,6 +171,9 @@ void indexWrite(void *arg, char *key, void *data)
 	}
 }
 
+/*
+ * printCounterPair: 
+ */
 void printCounterPair(void *arg, int key, int count)
 {
 	if (arg != NULL) {
@@ -147,7 +185,9 @@ void printCounterPair(void *arg, int key, int count)
 }
 
 /*
- * parseArguments:
+ * parseArguments: validate command line arguments
+ * passed to indexer, return nonzero integer if
+ * arguments are invalid
  */
 static int parseArguments(const int argc, char *argv[])
 {
@@ -167,7 +207,10 @@ static int parseArguments(const int argc, char *argv[])
 }
 
 /*
- * isCrawlerDirectory:
+ * isCrawlerDirectory: return true if the
+ * page directory contains the .crawler
+ * file created by crawling process, false
+ * otherwise
  */
 static bool isCrawlerDirectory(char *dir)
 {
@@ -203,7 +246,11 @@ int numDigits(int number)
 	}
 }
 
-
+/*
+ * hashDeleteFunc: delete the data stored
+ * in the hashtable; data is counters structure,
+ * so call counters_delete() on each data
+ */
 static void hashDeleteFunc(void *data)
 {
 	counters_t *counters = data;
