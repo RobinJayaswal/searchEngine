@@ -3,7 +3,7 @@
 #
 # Robin Jayaswal, Kyle Dotterrer, May 2016
 
-OBJS = file.o web.o word.o
+OBJS = file.o web.o word.o index.o
 LIB = common.a
 
 CFLAGS = -Wall -pedantic -std=c11 -ggdb
@@ -19,6 +19,7 @@ $(LIB): $(OBJS)
 file.o: file.c file.h
 web.o: web.c web.h
 word.o: word.c word.h
+index.o: index.c index.h
 
 
 # clean library and subdirectories

@@ -44,20 +44,16 @@
 #include "../lib/counters/counters.h"
 #include "../common/file.h"
 #include "../common/word.h"
+#include "../common/index.h"
 
 char *MALLOC_ERR = "Error: memory allocation error";    // error message
 const int HASHTABLE_SIZE = 10000;                       // number of slots
 
-
 static void indexBuild(char *pageDir, hashtable_t *index);
-static void indexSave(char *indexFile, hashtable_t *index);
-void indexWrite(void *arg, char *key, void *data);
-void printCounterPair(void *arg, int key, int count);
 static int parseArguments(const int argc, char *argv[]);
 static bool isCrawlerDirectory(char *dir);
 int numDigits(int number);
 static void hashDeleteFunc(void *data);
-// static void *checkPtr(void *ptr, char *message);
 
 
 int main(const int argc, char* argv[])
@@ -110,7 +106,6 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		char *word;
 		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
 			char *normalized = NormalizeWord(word);
-			//NormalizeWord(word);
 			if (strlen(normalized) > 2){
 				counters_t *wordCounters = hashtable_find(index, normalized);
 				if (wordCounters){
@@ -128,60 +123,13 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		docID++;
 
 		free(html);
+		count_free(fn);
 
 		// construct new filename
-		count_free(fn);
 		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID), MALLOC_ERR);
 		sprintf(fn, "%s/%i", pageDir, docID);
 	}
 	count_free(fn);
-}
-
-/*
- * indexSave: 
- */
-static void indexSave(char *indexFile, hashtable_t *index)
-{
-	printf("Saving index\n");
-	FILE *fp = fopen(indexFile, "w");
-	hashtable_iterate(index, indexWrite, fp);
-	fclose(fp);
-}
-
-/*
- * indexWrite:
- */
-void indexWrite(void *arg, char *key, void *data)
-{
-	// needs to take the the current word as arg. Also needs to
-	// know if it is supposed to write the word on the line.
-	// lastly, needs to know the file to write to. 
-	// The key of the list is the word. The data is the counters struct
-
-	FILE *fp = arg;
-	char *word = key;
-	counters_t *counters = data;
-
-	if (word != NULL && counters != NULL){
-		fprintf(fp, "%s", word);
-
-		counters_iterate(counters, printCounterPair, fp);
-
-		fprintf(fp, "\n");
-	}
-}
-
-/*
- * printCounterPair: 
- */
-void printCounterPair(void *arg, int key, int count)
-{
-	if (arg != NULL) {
-		FILE *fp = arg;
-		int docID = key;
-
-		fprintf(fp, " %d %d", docID, count);
-	}
 }
 
 /*
@@ -257,15 +205,3 @@ static void hashDeleteFunc(void *data)
 	counters_delete(counters);
 }
 
-/*
- * checkPtr:
- * Credit to David Kotz for function inspiration
- */
-// static void *checkPtr(void *ptr, char *message)
-// {
-// 	if (ptr == NULL) {
-// 		fprintf(stderr, "Error: %s\n", message);
-// 		exit(99);
-// 	}
-// 	return ptr;
-// }

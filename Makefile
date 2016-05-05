@@ -17,7 +17,6 @@ all:
 	$(MAKE) -C querier
 
 clean:
-	cd data; rm -f *
 	cd common; $(MAKE) clean
 	cd lib; $(MAKE) clean
 	cd crawler; $(MAKE) clean
