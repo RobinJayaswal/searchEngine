@@ -71,10 +71,10 @@ wordn docID count [docID count]...
 
 We anticipate the following modules or functions:
 
-* **main**, which parses arguments and initalizes other modules
-* **index_build**, which constructs an index from the pageDirectory
-* **index_save**, which writes the index to the file (see **Input/Output**)
-* **index_load**, which takes an index file and create the index it describes
+* *main*, which parses arguments and initalizes other modules
+* *index_build*, which constructs an index from the pageDirectory
+* *index_save*, which writes the index to the file (see **Input/Output**)
+* *index_load*, which takes an index file and create the index it describes
 
 We also anticipate the use of helper modules providing the following data structures:
 * **hashtable holding the index**
@@ -102,10 +102,10 @@ The outline of the logic for the indexer is roughly as follows:
 
 **Dataflow Through Modules**
 
-* **main** parses arguments and initalizes other modules
-* **index_build** constructs an index from the pageDirectory
-* **index_save** writes the index to the file (see **Input/Output**)
-* **index_load** takes an index file and create the index it describes
+* *main* parses arguments and initalizes other modules
+* *index_build* constructs an index from the pageDirectory
+* *index_save* writes the index to the file (see **Input/Output**)
+* *index_load* takes an index file and create the index it describes
 
 **Major Data Structures**
 
