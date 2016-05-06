@@ -45,6 +45,49 @@ The index tester *may* assume that
 
 ### **Design Spec**
 
+**User Interface**
+
+The indexer takes a pageDirectory and creates an index file.
+An example of the command-line interface is:
+
+```./indexer pageDirectory indexFilename```
+
+**Inputs and Outputs**
+
+* Input: The only inputs are the parameters passed on the commadn line. 
+See User interface
+
+* Output: Writes the index to the file specified by indexFilename parameter (see **User Interface**).
+The file contains one line for every word in the index. On that same line will
+be printed a (docID, count) pair for every page on which that word appeared.
+The format of the file is therefore as follows:
+
+word1 docID count [docID count]...
+word2 docID count [docID count]...
+...
+wordn docID count [docID count]...
+
+**Functional Decomposition into Modules**
+
+We anticipate the following modules or functions:
+
+* **main**: parses arguments and initalizes other modules
+* **index_build**: construct an index from the pageDirectory
+* **index_save**: write the index to the file (see **Input/Output**)
+* **index_load**: take an index file and create the index it describes
+
+We also anticipate the use of helper modules providing the following data structures:
+* **hashtable holding the index**
+
+**Pseudo Code for Logic/Algorithmic Flow**
+
+The outline of the logic for the indexer is roughly as follows:
+1. 
+
+**Dataflow Through Modules**
+
+**Major Data Structures**
+
 ### **Implementation Spec**
 
 ### **Testing Plan**
