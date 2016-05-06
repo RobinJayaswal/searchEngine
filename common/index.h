@@ -10,7 +10,8 @@
 
 /*
  * indexSave: save the given index data structure
- * to a new filename with name indexFilename
+ * to a new filename with name indexFilename;
+ * handles all memory allocations
  */
 void indexSave(char *indexFile, hashtable_t *index);
 
@@ -18,5 +19,7 @@ void indexSave(char *indexFile, hashtable_t *index);
  * indexLoad: load the index data contained within
  * indexFile into inverted index data structure;
  * assumes memory for index data structure alloc'ed 
+ * returns 0 when index loading is successful, 
+ * nonzero return value otherwise
  */
 int indexLoad(char *indexFile, hashtable_t *index);

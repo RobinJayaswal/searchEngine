@@ -71,17 +71,6 @@ int indexLoad(char *indexFile, hashtable_t *index)
 	int docID;
 	int count;
 
-	if (index == NULL) {
-		fprintf(stderr, "Error: cannot load into invalid structure\n");
-		return 11;
-	}
-
-	if ( (fp = fopen(indexFile, "r")) == NULL) {
-		// failed to open file
-		fprintf(stderr, "Error: could not open index file\n");
-		return 13;
-	}
-
 	while (fscanf(fp, "%s ", word) == 1) {
 
 		counters_t *counters = counters_new();

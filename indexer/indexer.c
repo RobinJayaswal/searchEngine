@@ -18,14 +18,11 @@
  *				WORD docID occurences [docID occurences]...
  *
  * functions:
- * 		> indexBuild:
- *      > indexSave: 
- * 		> indexWrite:
- * 		> printCounterPair:
- * 		> parseArguments:  
- * 		> isCrawlerDirectory:
- * 		> numDigits: 
- * 		> hashDeleteFunc: 
+ * 		> indexBuild: build inverted index from collection of files
+ * 		> parseArguments: parse command line arguments
+ * 		> isCrawlerDirectory: determine if page directory is valid
+ * 		> numDigits: determine number of digits in integer
+ * 		> hashDeleteFunc: delete counters from hastable data
  *
  * stdin: none
  * stdout: none
@@ -144,14 +141,13 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID) + 3, MALLOC_ERR);
 		printf("%p\n", (void *)&fn);
 
-		// need to determine if we should add slash to end of pageDir or nod
+		
 		char *slash;
-		// use pointer arithmetic to get last char in page dir
+		// get last char in page dir
 		char *lastChar = pageDir + strlen(pageDir) - 1;
+		// determine if we should add slash to end of pageDir or nod
 		slash = (*lastChar == '/') ? "" : "/";
-
 		sprintf(fn, "%s%s%i", pageDir, slash, docID);
-		printf("%s\n", fn);
 	}
 	count_free(fn);
 }
