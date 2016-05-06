@@ -1,4 +1,4 @@
-# Makefile for indexer sub-program
+# Makefile for indexer subsystem and indextest program
 #
 # Template courtesy of David Kotz, April 2016
 # 
@@ -9,8 +9,10 @@ L = ../lib
 
 PROG = indexer 
 OBJS = indexer.o
+
 PROG2 = indextest
 OBJS2 = indextest.o
+
 LIBS = 
 LLIBS = $L/cs50ds.a $C/common.a
 
@@ -38,5 +40,6 @@ clean:
 	rm -f *~
 	rm -f *.o
 	rm -f $(PROG)
+	rm -f $(PROG2)
 
 
