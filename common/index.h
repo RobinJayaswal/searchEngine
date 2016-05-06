@@ -6,6 +6,7 @@
  *
  * ========================================================================= */
 
+#include "../lib/hashtable/hashtable.h"
 
 /*
  * indexSave: save the given index data structure

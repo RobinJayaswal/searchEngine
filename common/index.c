@@ -67,9 +67,7 @@ static void printCounterPair(void *arg, int key, int count)
 int indexLoad(char *indexFile, hashtable_t *index)
 {
 	FILE *fp;
-	char *line;
-	
-	char *word;
+	char word[30];
 	int docID;
 	int count;
 
@@ -84,20 +82,18 @@ int indexLoad(char *indexFile, hashtable_t *index)
 		return 13;
 	}
 
-	// loop over every line in index file
-	while ( (line = readline(fp)) != EOF) {
+	while (fscanf(fp, "%s ", word) == 1) {
 
-		// pull off the word
-		sscanf(line, "%s", word);
+		counters_t *counters = counters_new();
+		hashtable_insert(index, word, counters);
 
-		// loop over (docID, count) pairs
-		while (sscanf(line, "%d %d", &docID, &count) == 2) {
-			;
+		while (fscanf(fp, " %d %d", &docID, &count) == 2) {
+
+			counters_set(counters, docID, count);
 		}
-
-		// free the line
-		free(line);
 	}
+	fclose(fp);
+	return 0;
 }
 
 

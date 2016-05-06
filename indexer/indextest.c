@@ -23,6 +23,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../common/index.h"
+#include "../lib/counters/counters.h"
 #include "../lib/hashtable/hashtable.h"
 
 /****************** CONSTANTS *******************/
