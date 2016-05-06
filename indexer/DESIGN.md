@@ -82,7 +82,23 @@ We also anticipate the use of helper modules providing the following data struct
 **Pseudo Code for Logic/Algorithmic Flow**
 
 The outline of the logic for the indexer is roughly as follows:
-1. 
+1. Execute from a command line with usage syntax
+    * ```./indexer pageDirectory indexFilename```
+    * where pageDirectory is directory of webpage files
+    * where indexFilename is the file to write the index to
+2. Parse command line, validate parameters, and initalize other modules
+3. Initialize index data structure
+4. While there are more webpage files in pageDirectory to index:
+    1. Get the filename of the next file to read
+    2. Open the file
+    3. Read html of that webpage
+    4. While there are words left in the html
+        1. If word not in index, add to index
+        2. Increment count of (docID, count) pair for the word and the current page
+5. Use *index_save* to save the index to indexFile
+    1. While there are words in index:
+        1. For each word, print word to line
+        2. While there are more pages containing that word, write (docID, count) pair to same line
 
 **Dataflow Through Modules**
 
