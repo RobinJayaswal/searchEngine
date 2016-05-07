@@ -5,6 +5,9 @@
 # usage: indexerArgsTest
 # (no arguments)
 #
+# run indexer with various command line arguments, printing
+# the error message output and the exit status for each case
+#
 # Robin Jayaswal, Kyle Dotterrer, May 2016
 
 if [ $# != 0 ]; then
@@ -34,7 +37,7 @@ echo ">> indexer ../data/badDir testIndex"
 echo "error code: $?"
 echo
 
-# case 4: successful run
+# case 4: successful execution
 echo "running indexer with valid arguments:"
 echo ">> indexer ../data/crawl1 testIndex"
 ./indexer ../data/crawl1 ../data/testIndex

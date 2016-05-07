@@ -109,8 +109,15 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		// get files content into a string
 		char *html = file2string(fp);
 
-		int pos = 2;	// skip first two words (url & depth)
+		int pos = 0;
+		int i = 0;   	
 		char *word;
+
+		// skip first two words (url & depth)
+		while ( i < 2 && ((pos = GetNextWord(html, pos, &word)) != -1) ) {
+			// loop over url and depth 'words'
+			i++;
+		}
 
 		// loop through words in html, normalize, update index
 		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
