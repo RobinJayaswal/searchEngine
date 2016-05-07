@@ -248,4 +248,3 @@ directory that is not a proper crawler directory.
 2. Run scripts to ensure that when index is loaded from index file, then written
 out again to a new index file, the two index files match.
 
-script
