@@ -233,3 +233,19 @@ Index is stored in file. Filename to be written to is provided as second argumen
 
 
 ### **Testing Plan**
+
+*Unit Testing* Test programs for each of the modules is included in the respective
+files. These will all be run before integration.
+
+*Integration Testing* Build the indexer and test it's functionality. Carefully
+examine output files that index is written to, making sure the format is correct,
+and that the word counts represented on the pages are correct (done by manually checking
+word counts of some words on some pages, and comparing). Make sure no words are duplicated.
+
+1. Give various incorrect command line arguments. Incorrect number of arguments, 
+directory that is not a proper crawler directory.
+
+2. Run scripts to ensure that when index is loaded from index file, then written
+out again to a new index file, the two index files match.
+
+script
