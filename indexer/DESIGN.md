@@ -141,81 +141,81 @@ Opaque:
 **Pseudo code for the components**
 
 * *main(const int argc, char\* argv[])*
-    *if (parseArguments(argc, argv)) returns nonzero) { exit with error }
-    *else { continue with program }
-    *hashtable index == hashtable_new(size, hashDeleteFunc)
-    *indexBuild(argument1-pageDir, index)
-    *indexSave(argument2-indexFilename, index)
-    *hashtable_delete(index)
-    *exit
+    * if (parseArguments(argc, argv)) returns nonzero) { exit with error }
+    * else { continue with program }
+    * hashtable index == hashtable_new(size, hashDeleteFunc)
+    * indexBuild(argument1-pageDir, index)
+    * indexSave(argument2-indexFilename, index)
+    * hashtable_delete(index)
+    * exit
 
 * *int parseArguments(argc, argv)*
-    *if argc != 3 return nonzero
-    *if isCrawlerDirectory(argv[1]) == false, return nonzero
+    * if argc != 3 return nonzero
+    * if isCrawlerDirectory(argv[1]) == false, return nonzero
 
 * *void indexBuild(char \*pageDir, hashtable_t \*index)*
-    *int docID = 1
-    *char *filename = malloc
-    *sprintf(filename, "%s/%i", pageDir, docID)
-    *while(fopen can open file with current docID)
-        *fp = fopen(filename)
-        *html = file2string(f)
-        *while(GetNextWord gets a word from html)
-            *NormalizeWord(word)
-            *if (strlen(word) > 2)
-                *if(hashtable_find(index, word) returns counters)
-                    *increment counter in (docID, counter) pair
-                *else 
-                    *counters = new_counter
-                    *counters_add(counters, docID, 1)
-                    *hashtable_insert(index, word, counters)
-            *free(word)
-        *close(file), free(html), free(filename)
-        *docID++
-        *fn = malloc, sprintf(filename, "%s/%i", pageDir, docID)
+    * int docID = 1
+    * char *filename = malloc
+    * sprintf(filename, "%s/%i", pageDir, docID)
+    * while(fopen can open file with current docID)
+        * fp = fopen(filename)
+        * html = file2string(f)
+        * while(GetNextWord gets a word from html)
+            * NormalizeWord(word)
+            * if (strlen(word) > 2)
+                * if(hashtable_find(index, word) returns counters)
+                    * increment counter in (docID, counter) pair
+                * else 
+                    * counters = new_counter
+                    * counters_add(counters, docID, 1)
+                    * hashtable_insert(index, word, counters)
+            * free(word)
+        * close(file), free(html), free(filename)
+        * docID++
+        * fn = malloc, sprintf(filename, "%s/%i", pageDir, docID)
 
-* *void indexSave(char \*indexFilename, hashtable_t \*index))*
-    *FILE *fp = fopen(indexFilename, "w")
-    *hashtable_iterate(index, indexWrite), fp);
-    *close(fp)
+* * void indexSave(char \*indexFilename, hashtable_t \*index))*
+    * FILE *fp = fopen(indexFilename, "w")
+    * hashtable_iterate(index, indexWrite), fp);
+    * close(fp)
 
-* *int indexLoad(char *indexFile, hashtable_t *index)
-    *fp = open(indexFile, "w")
-    *while(fscan(fp, "%s ", word) is successful)
-        *counters_t *counters = counters_new()
-        *hashtable_insert(index, word, counters)
-        *while (fscanf(fp, " %d %d", docID, count) is successful)
-            *counters_set(counters, docID, count);
+* * int indexLoad(char *indexFile, hashtable_t *index)
+    * fp = open(indexFile, "w")
+    * while(fscan(fp, "%s ", word) is successful)
+        * counters_t *counters = counters_new()
+        * hashtable_insert(index, word, counters)
+        * while (fscanf(fp, " %d %d", docID, count) is successful)
+            * counters_set(counters, docID, count);
 
 **Pseudo code for the functions**
 
 * *bool isCrawlerDirectory(char \*dir)*
-    *char *fn = malloc
-    *sprintf(fn, "%s/.crawler", dir)
-    *if (fopen opens file with naem fn) { return true }
-    *else { return false }
-    *fclose(file), free(fn)
+    * char *fn = malloc
+    * sprintf(fn, "%s/.crawler", dir)
+    * if (fopen opens file with naem fn) { return true }
+    * else { return false }
+    * fclose(file), free(fn)
 
 * *int numDigits(int number)*
-    *if (number has one digit) { return 1 }
-    *else { return 1 + numDigits(number without first digit)}
+    * if (number has one digit) { return 1 }
+    * else { return 1 + numDigits(number without first digit)}
 
 * *static void hashDeleteFunc(void \*data)*
-    *counters_t counters = data
-    *counters_delete(counters)
+    * counters_t counters = data
+    * counters_delete(counters)
 
 * *void indexWrite(void \*arg, char \*key, void \*data)*
-    *FILE *file = arg;
-    *char *word = key;
-    *counters_t *counters = data;
-    *fprintf(fp, "%s", word);
-    *counters_iterate(counters, printCounterPair, fp);
-    *fprintf(fp, "\n");
+    * FILE *file = arg;
+    * char *word = key;
+    * counters_t *counters = data;
+    * fprintf(fp, "%s", word);
+    * counters_iterate(counters, printCounterPair, fp);
+    * fprintf(fp, "\n");
     }
 }
 
 * *void printCounterPair(void \*arg, int key, int count)*
-    *fprintf(fp, " %d %d", docID, count)
+    * fprintf(fp, " %d %d", docID, count)
 
 **Data Structures**
 1. Hashtable of lists of counters, (word, counters) as (key, value)
@@ -233,3 +233,19 @@ Index is stored in file. Filename to be written to is provided as second argumen
 
 
 ### **Testing Plan**
+
+*Unit Testing* Test programs for each of the modules is included in the respective
+files. These will all be run before integration.
+
+*Integration Testing* Build the indexer and test it's functionality. Carefully
+examine output files that index is written to, making sure the format is correct,
+and that the word counts represented on the pages are correct (done by manually checking
+word counts of some words on some pages, and comparing). Make sure no words are duplicated.
+
+1. Give various incorrect command line arguments. Incorrect number of arguments, 
+directory that is not a proper crawler directory.
+
+2. Run scripts to ensure that when index is loaded from index file, then written
+out again to a new index file, the two index files match.
+
+script
