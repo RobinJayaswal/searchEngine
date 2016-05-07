@@ -35,21 +35,23 @@
 
 /****************** CONSTANTS *******************/
 char *MALLOC_ERR = "Error: memory allocation error";    // error message
-const int HASHTABLE_SIZE = 10000;                       // number of slots
 
 
 /************ FUNCTION PROTOTYPES **************/
-int parseArguments(const int argc, char *argv[]);
+static int parseArguments(const int argc, char *argv[]);
 static void hashDeleteFunc(void *data);
+static int lines_in_file(FILE *fp);
 
 
 /******************* main() ********************/
 int main(const int argc, char *argv[])
 {
 	int argStatus;
-	int loadStatus;
 	char *oldIndexFn;
 	char *newIndexFn;
+	int numLines;        // number of lines in index file 
+	int numSlots;        // number of slots in hashtable
+	FILE *fp;
 
 	argStatus = parseArguments(argc, argv);
 
@@ -60,12 +62,25 @@ int main(const int argc, char *argv[])
 	oldIndexFn = argv[1];
 	newIndexFn = argv[2];
 
-	// create the inverted index data structure
-	hashtable_t *index = hashtable_new(HASHTABLE_SIZE, hashDeleteFunc);
+	// attempt to open the file
+	if ( (fp = fopen(oldIndexFn, "r")) == NULL) {
+		// failure to open file
+		fprintf(stderr, "Error: could not open file %s\n", oldIndexFn);
+		exit(3);
+	} else {
+		// successful open, determine number of lines
+		numLines = lines_in_file(fp);
+		fclose(fp);
+	}
 
+	// calculate optimal table size: load factor range 0.7 - 0.75
+	numSlots = numLines * 1.4;
+
+	// create the inverted index data structure
+	hashtable_t *index = hashtable_new(numSlots, hashDeleteFunc);
 	if (index == NULL) {
-		// check for allocation errors
-		fprintf(stderr, "Error: index structure allocation\n");
+		// check for allocation error
+		fprintf(stderr, "Error: failed to create index structure\n");
 		exit(11);
 	}
 
@@ -89,9 +104,6 @@ int main(const int argc, char *argv[])
 int parseArguments(const int argc, char *argv[])
 {
 	char *progName = argv[0];
-	char *oldIndexFilename;
-	FILE *fp;
-
 
 	if (argc != 3){
 		// invalid: must have exactly 3 arguments
@@ -99,16 +111,33 @@ int parseArguments(const int argc, char *argv[])
 		fprintf(stderr, "usage: %s oldIndexFilename newIndexFilename\n", progName);
 		return 1;
 	}
-
-	oldIndexFilename = argv[1];
-
-	if ( (fp = fopen(oldIndexFilename, "r")) == NULL) {
-		// failed to open file
-		fprintf(stderr, "Error: could not open index file\n");
-		return 3;
-	}
-	fclose(fp);
 	return 0;
+}
+
+/**************** lines_in_file ****************/
+/* Returns the number of lines in the given file,
+ * i.e., the number of newlines in the file.
+ * (If the file does not end with a newline, it will undercount by one.)
+ * On return, the file pointer is back to beginning of file.
+ * This will not work for pipes or stdin when it is attached to keyboard.
+ * Courtesy of David Kotz
+ */
+static int lines_in_file(FILE *fp)
+{
+  if (fp == NULL)
+    return 0;
+
+  rewind(fp);
+
+  int nlines = 0;
+  char c = '\0';
+  while ( (c = fgetc(fp)) != EOF)
+    if (c == '\n')
+      nlines++;
+
+  rewind(fp);
+  
+  return nlines;
 }
 
 /*

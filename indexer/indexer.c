@@ -72,6 +72,11 @@ int main(const int argc, char* argv[])
 	indexFN = argv[2];
 
 	hashtable_t *index = hashtable_new(HASHTABLE_SIZE, hashDeleteFunc);
+	if (index == NULL) {
+		// check for allocation error
+		fprintf(stderr, "Error: failed to create index structure\n");
+		exit(11);
+	}
 
 	// build the index
 	indexBuild(pageDir, index);
@@ -128,7 +133,6 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 			// free word on every iteration
 			free(word);
 		}
-
 		// close file and free strings that will take new values
 		fclose(fp);
 
@@ -139,9 +143,7 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 
 		// construct new filename for next iteration
 		fn = count_malloc_assert(strlen(pageDir)+numDigits(docID) + 3, MALLOC_ERR);
-		printf("%p\n", (void *)&fn);
 
-		
 		char *slash;
 		// get last char in page dir
 		char *lastChar = pageDir + strlen(pageDir) - 1;

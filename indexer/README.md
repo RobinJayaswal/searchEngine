@@ -64,8 +64,19 @@ crawler specs.
 #### Indextest
 * The content of the index file follows the format specified in the 
 requirements specifications. 
+* No words read from the index file will be longer than 200 characters;
+words longer than this may result in improper behavior
 
 ### **Limitations**
+* The index data structure built by indexer before initially saving the
+result to a file does not have dynamic resizing capabilities; the size of
+the hashtable used to implement the index structure is hard-coded to 10,000
+slots. If only a small number of files are considered, or relatively few 
+unique words are encountered, this table size could result in a waste of
+memory resources. Conversely, if far more than 10,000 words are considered,
+the number of collisions could render hashtable operations inefficiently slow.
+* The index built from a file by the indexLoad function does not encounter this
+problem because the number of unique words is known before the table is allocated. 
 
 ### **Exit Codes**
 * 0: Success

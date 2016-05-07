@@ -21,6 +21,8 @@ static void printCounterPair(void *arg, int key, int count);
 void indexSave(char *indexFile, hashtable_t *index)
 {
 	FILE *fp = fopen(indexFile, "w");
+
+	// iterate over each word in index, writing to file
 	hashtable_iterate(index, indexWrite, fp);
 	fclose(fp);
 }
@@ -41,6 +43,7 @@ static void indexWrite(void *arg, char *key, void *data)
 	if (word != NULL && counters != NULL){
 		fprintf(fp, "%s", word);
 
+		// iterate over each docID, count combo 
 		counters_iterate(counters, printCounterPair, fp);
 
 		fprintf(fp, "\n");
@@ -66,23 +69,36 @@ static void printCounterPair(void *arg, int key, int count)
 /****************** indexLoad *******************/
 int indexLoad(char *indexFile, hashtable_t *index)
 {
-	FILE *fp;
-	char word[30];
-	int docID;
+	FILE *fp;          
+	char word[200];   // character buffer 
+	int docID;        
 	int count;
 
+	// open file; check for errors
+	if ( (fp = fopen(indexFile, "r")) == NULL) {
+		fprintf(stderr, "Error: unable to read from file %s\n", indexFile);
+		return 3;
+	}
+
+	// pull off the leading word
 	while (fscanf(fp, "%s ", word) == 1) {
 
+		// create new counters and insert into table
 		counters_t *counters = counters_new();
 		hashtable_insert(index, word, counters);
 
+		// loop over all docID, count pairs
 		while (fscanf(fp, " %d %d", &docID, &count) == 2) {
 
+			// create new counter and set 
 			counters_set(counters, docID, count);
 		}
 	}
 	fclose(fp);
 	return 0;
 }
+
+
+
 
 
