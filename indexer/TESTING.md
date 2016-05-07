@@ -1,4 +1,4 @@
-## TESTING for indexer subsystem
+## **TESTING for indexer subsystem**
 ## Robin Jayaswal, Kyle Dotterrer, May 2016
 
 We utilized two bash scripts: indextest.sh and indexerArgsTest.sh, to test 
@@ -65,24 +65,40 @@ error code: 0
 
 ### Controlled Indexer Execution
 
-We created two new files within a subdirectory of the data
-directory called testCrawl. The content of the two files is as follows:
-
+Finally, we created a samll test case in order to verify proper indexer behavior.
+We created two new files within a subdirectory of the data directory called 
+testCrawl. The content of the two files is as follows:
+```
+[kad@flume ~/cs50/labs/tse/data/testCrawl]$ cat 1
 url 
 depth
 hello world
-
+[kad@flume ~/cs50/labs/tse/data/testCrawl]$ cat 2
 url
 depth
 hello robin kyle
+```
 
-The index file produced by indexer after invocation on with this page directory
-is as follows:
+We then ran the following command to create an index file using these two sample
+files:
+```
+[kad@flume ~/cs50/labs/tse/indexer]$ indexer ../data/testCrawl ../data/testIndex
+```
 
+The index file produced by indexer after invocation on the sample page directory
+is shown below:
+```
+[kad@flume ~/cs50/labs/tse/data]$ cat testIndex
 hello 2 1 1 1
 world 1 1
 robin 2 1
 kyle 2 1
+```
+
+Because the file sizes are so small, it is possible to verify visually that the
+index file output matches exactly the expected output based on the two files in
+the page directory. This test case therefore tells us that our indexer behaves
+as expected. 
 
 
 

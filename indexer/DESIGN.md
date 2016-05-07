@@ -163,12 +163,12 @@ Opaque:
         * while(GetNextWord gets a word from html)
             * NormalizeWord(word)
             * if (strlen(word) > 2)
-                * if(hashtable_find(index, word) returns counters)
-                    * increment counter in (docID, counter) pair
-                * else 
-                    * counters = new_counter
-                    * counters_add(counters, docID, 1)
-                    * hashtable_insert(index, word, counters)
+                * if(hashtable_find(index, word) returns counters) {
+                1. increment counter in (docID, counter) pair }
+                * else {
+                1. counters = new_counter
+                2. counters_add(counters, docID, 1)
+                3. hashtable_insert(index, word, counters) }
             * free(word)
         * close(file), free(html), free(filename)
         * docID++
@@ -248,4 +248,3 @@ directory that is not a proper crawler directory.
 2. Run scripts to ensure that when index is loaded from index file, then written
 out again to a new index file, the two index files match.
 
-script
