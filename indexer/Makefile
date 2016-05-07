@@ -29,8 +29,11 @@ $(PROG): $(OBJS) $(LLIBS)
 $(PROG2): $(OBJS2) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-# indexer source dependencies; add others as needed
-indexer.o: 
+# indexer source dependencies
+indexer.o: $L/memory/memory.h $L/hashtable/hashtable.h $L/counters/counters.h $C/index.h $C/word.h $C/file.h
+
+# indextest source dependencies
+indextest.o: $C/index.h $L/hashtable/hashtable.h $L/counters/counters.h
 
 # nondefault build, with logged process output
 log:
