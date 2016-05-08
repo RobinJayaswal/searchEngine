@@ -20,6 +20,9 @@ can be compiled with a single command:
 
 _make_
 
+The equivalent command issued from the top level (tse/) directory 
+builds all three subsystems as well as necessary libraries. 
+
 ### **Usage**
 #### _Indexer_
 indexer pageDirectory indexFilename

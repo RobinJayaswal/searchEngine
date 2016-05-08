@@ -54,7 +54,7 @@ An example of the command-line interface is:
 
 **Inputs and Outputs**
 
-* Input: The only inputs are the parameters passed on the commadn line. 
+* Input: The only inputs are the parameters passed on the command line. 
 See User interface
 
 * Output: Writes the index to the file specified by indexFilename parameter (see **User Interface**).
