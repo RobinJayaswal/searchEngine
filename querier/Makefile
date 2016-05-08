@@ -14,14 +14,14 @@ CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C -I$L $(LOG)
 CC = gcc
 MAKE = make
 
-build the querier
+# build the querier
 $(PROG): $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-querier source dependencies; add others as needed
+# querier source dependencies; add others as needed
 querier.o: 
 
-nondefault build, with logged process output
+# nondefault build, with logged process output
 log:
 	$(MAKE) LOG=-DLOG
 

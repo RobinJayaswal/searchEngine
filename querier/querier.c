@@ -11,19 +11,31 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
 #include "../common/index.h"
+#include "../common/file.h"
+#include "../lib/memory/memory.h"
+#include "../lib/counters/counters.h"
+#include "../lib/hashtable/hashtable.h"
 
- /************* Function Prototypes *************/
- const int parseArguments(const int argc, char *argv[]);
- static bool isCrawlerDirectory(char *dir)
+/****************** CONSTANTS *******************/
+char *MALLOC_ERROR = "Error: memory allocation error";
 
+/************* Function Prototypes *************/
+static char **tokenize(char *query);
+static void freeTokensArray(char **tokens);
+static bool validateQuery(char **tokens);
+static int parseArguments(const int argc, char *argv[]);
+static bool isCrawlerDirectory(char *dir);
+static int lines_in_file(FILE *fp);
+static void hashDeleteFunc(void *data);
 
 
  int main(const int argc, char *argv[])
  {
  	// parse arguments
- 	char *programName = argv[0];
-
  	int argStatus = parseArguments(argc, argv);
  	if (argStatus != 0)
  		exit(argStatus);
@@ -32,10 +44,120 @@
  	char *pageDir = argv[1];
  	char *indexFN = argv[2];
 
- 	
+ 	FILE *indexFile = fopen(indexFN, "r");
+ 	int numLines = lines_in_file(indexFile);
+ 	fclose(indexFile);
 
- 	
+ 	hashtable_t *index = hashtable_new(numLines * 1.4, hashDeleteFunc);
 
+ 	int loadStatus = indexLoad(indexFN, index);
+ 	if ( loadStatus != 0 ) {
+ 		exit(loadStatus);
+ 	}
+
+ 	char *query;
+
+ 	while ( (query = readline(stdin)) != NULL) {
+
+ 		char **tokens = tokenize(query);
+ 		
+ 		if (!tokens)
+ 			exit(11);
+
+ 		if (!validateQuery(tokens))
+ 			continue;
+ 
+ 		freeTokensArray(tokens);
+ 	}
+
+
+ 	exit(0);
+ }
+
+char **tokenize(char *query) 
+{
+ 	char *word;
+ 	int wordCount = 0;
+ 	int maxWords = 10;
+ 	char **tokens = count_calloc(maxWords, sizeof(char*));
+
+ 	word = strtok(query, " ");
+ 	
+ 	while( word != NULL) {
+
+ 		if (++wordCount > maxWords) {
+ 			maxWords = maxWords * 2;
+ 			tokens = realloc(tokens, maxWords);
+ 		}
+ 		for (int i = 0; i < strlen(word); i++) {
+ 			
+ 			if (isalpha(word[i]) == 0) {
+ 				fprintf(stderr, "Error: bad char '%c' in query\n", word[i]);
+ 				freeTokensArray(tokens);
+ 				return NULL;
+ 			} 
+ 			word[i] = tolower(word[i]);
+ 		}
+
+ 		char *token = count_malloc_assert(strlen(word) + 1, MALLOC_ERROR);
+ 		strcpy(token, word);
+
+ 		tokens[wordCount - 1] = token;
+
+ 		word = strtok(NULL, " ");
+ 	}
+
+ 	return ++tokens;
+ }
+
+ static void freeTokensArray(char **tokens)
+ {
+ 	int arrLen = sizeof(tokens) / sizeof(char*);
+ 	
+ 	for (int i = 0; i < arrLen; i++) {
+ 		if (tokens[i] != NULL)
+ 			count_free(tokens[i]);
+ 	}
+ 	count_free(tokens);
+ }
+
+ static bool validateQuery(char **tokens) 
+ {
+ 	int arrLen = sizeof(tokens)/sizeof(tokens[0]);
+ 	char *first = tokens[0];
+ 	char *last = tokens[arrLen - 1];
+
+ 	if ( (strcmp(first, "and") == 0) || (strcmp(first, "or") == 0) ) {
+ 		fprintf(stderr, "Error: '%s' cannot be first\n", first);
+ 		return false;
+ 	} 
+ 	else if ( (strcmp(last, "and") == 0) || (strcmp(last, "or") == 0) ) {
+ 		fprintf(stderr, "Error: '%s' cannot be last\n", last);
+ 		return false;
+ 	}
+
+ 	bool prevWasOp = false;
+
+ 	for (int i = 1; i < arrLen; i++) {
+ 		char *current = tokens[i];
+
+ 		printf("current: %s\n", current);
+ 		printf(prevWasOp ? "true" : "false");
+
+ 		if ( (strcmp(current, "and") == 0) || (strcmp(current, "or") == 0) ) {
+
+ 			if (prevWasOp) {
+ 				fprintf(stderr, "Error: '%s' and '%s' cannot be adjacent\n", 
+ 					tokens[i - 1], current);
+ 				return false;
+ 			}
+ 			prevWasOp = true;
+ 		} 
+ 		else {
+ 			prevWasOp = false;
+ 		}
+ 	}
+ 	return true; 
  }
 
 
@@ -43,7 +165,7 @@
  * returns nonzero if incorrect number of invalid pageDirectory
  * passed. zero otherwise
  */ 
- const int parseArguments(const int argc, char *argv[])
+ static int parseArguments(const int argc, char *argv[])
  {
  	char *programName = argv[0];
  	if (argc != 3) {
@@ -58,10 +180,12 @@
  	if (!isCrawlerDirectory(pageDir)){
  		fprintf(stderr, "Error: %s is not a proper crawler directory\n", pageDir);
  		fprintf(stderr, "See querier.c README for crawler directory reqs\n");
- 		return 3;
+ 		return 7;
  	}
 
- 	if ( (FILE *fp = fopen(indexFN)) == NULL){
+ 	FILE *fp;
+
+ 	if ( (fp = fopen(indexFN, "r")) == NULL) {
  		fprintf(stderr, "Error: %s is not a readable file\n", indexFN);
  		fprintf(stderr, "See querier.c README.md for index filename reqs\n");
  		return 5;
@@ -96,4 +220,42 @@ static bool isCrawlerDirectory(char *dir)
 		fclose(fp);
 		return true;
 	}
+}
+
+
+/**************** lines_in_file ****************/
+/* Returns the number of lines in the given file,
+ * i.e., the number of newlines in the file.
+ * (If the file does not end with a newline, it will undercount by one.)
+ * On return, the file pointer is back to beginning of file.
+ * This will not work for pipes or stdin when it is attached to keyboard.
+ * Courtesy of David Kotz
+ */
+static int lines_in_file(FILE *fp)
+{
+  if (fp == NULL)
+    return 0;
+
+  rewind(fp);
+
+  int nlines = 0;
+  char c = '\0';
+  while ( (c = fgetc(fp)) != EOF)
+    if (c == '\n')
+      nlines++;
+
+  rewind(fp);
+  
+  return nlines;
+}
+
+/*
+ * hashDeleteFunc: delete the data stored
+ * in the hashtable; data is counters structure,
+ * so call counters_delete() on each data
+ */
+static void hashDeleteFunc(void *data)
+{
+	counters_t *counters = data;
+	counters_delete(counters);
 }
