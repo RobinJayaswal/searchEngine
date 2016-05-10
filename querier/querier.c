@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <signal.h>
 #include "../common/index.h"
 #include "../common/file.h"
 #include "../lib/memory/memory.h"
@@ -44,6 +45,7 @@ static void insertCounter(void *arg, int key, int count);
 int resultCompare(const void *a, const void *b);
 static char **tokenize(char *query);
 static void freeTokensArray(char **tokens);
+static void freeResults(result_t **results, int len);
 static bool validateQuery(char **tokens);
 static int parseArguments(const int argc, char *argv[]);
 static bool isCrawlerDirectory(char *dir);
@@ -51,6 +53,7 @@ static int lines_in_file(FILE *fp);
 static int numDigits(int number);
 static int arrayLength(char **array);
 static void hashDeleteFunc(void *data);
+static void signalHandler(int signum);
 
 
  int main(const int argc, char *argv[])
@@ -59,6 +62,8 @@ static void hashDeleteFunc(void *data);
  	int argStatus = parseArguments(argc, argv);
  	if (argStatus != 0)
  		exit(argStatus);
+
+ 	signal(SIGINT, signalHandler);
 
  	// argument tests passed
  	char *pageDir = argv[1];
@@ -105,12 +110,13 @@ static void hashDeleteFunc(void *data);
 
 
  		freeTokensArray(tokens);
- 		free(pageResults);
+ 		counters_delete(pageResults);
+ 		freeResults(sortedResults, numResults);
  		free(query);
  	}
 
  	hashtable_delete(index);
-
+ 	count_report(stdout, "Memory Allocation Report");
  	exit(0);
  }
 
@@ -146,7 +152,7 @@ static counters_t *performQuery(char **tokens, hashtable_t *index)
 			}
 		}
 		unionCounters(finalResults, andSequence);
-		free(andSequence);
+		counters_delete(andSequence);
 		i++;
 	}
 
@@ -161,15 +167,16 @@ static counters_t *intersectCounters(counters_t *ctrs1, counters_t *ctrs2)
 {
 	counters_t *intersection = counters_new();
 
-	countersPair_t *pair = count_malloc_assert(sizeof(struct countersPair), MALLOC_ERROR);
+	countersPair_t *pair = count_malloc(sizeof(struct countersPair));
+	
 	pair->intersection = intersection;
 	pair->ctrs2 = ctrs2;
-
 
 	counters_iterate(ctrs1, intersectHelper, pair);
 
 	free(pair);
-
+	if (ctrs1 != ctrs2)
+		counters_delete(ctrs1);
 	return intersection;
 }
 
@@ -237,7 +244,7 @@ static void insertCounter(void *arg, int key, int count)
 	if (results == NULL || results[0] == NULL){
 		index = 0;
 	}
-	result_t *newResult = count_malloc_assert(sizeof(struct result), MALLOC_ERROR);
+	result_t *newResult = count_malloc(sizeof(struct result));
 
 	newResult->docID = key;
 	newResult->score = count;
@@ -340,12 +347,18 @@ static char **tokenize(char *query)
  	return true; 
  }
 
-
+static void freeResults(result_t **results, int len)
+{
+	for (int i = 0; i < len; i++) {
+		if (results[i])
+			count_free(results[i]);
+	}
+	count_free(results);
+}
 
 
  static void freeTokensArray(char **tokens)
  {
- 	
 	int arrLen = arrayLength(tokens);
  	
  	for (int i = 0; i < arrLen; i++) {
@@ -356,8 +369,6 @@ static char **tokenize(char *query)
  	count_free(*(tokens - 1));
  	// must free from start of original allocated array
  	count_free(tokens - 1);
-
- 	printf("Freed tokens array\n");
  }
 
 /* parseArguments: check arguments passed to querier
@@ -485,4 +496,9 @@ static void hashDeleteFunc(void *data)
 {
 	counters_t *counters = data;
 	counters_delete(counters);
+}
+
+static void signalHandler(int signum)
+{
+	exit(99);
 }
