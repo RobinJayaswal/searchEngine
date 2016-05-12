@@ -18,8 +18,8 @@ MAKE = make
 $(PROG): $(OBJS) $(LLIBS)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
-# querier source dependencies; add others as needed
-querier.o: 
+# querier source dependencies
+querier.o: $C/index.h $C/file.h $L/memory/memory.h $L/hashtable/hashtable.h $L/counters/counters.h
 
 # nondefault build, with logged process output
 log:

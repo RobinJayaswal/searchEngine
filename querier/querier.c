@@ -1,6 +1,18 @@
 /* ============================================================================
  *
- * querier.c
+ * querier.c - print documents matching user input query to stdout
+ *
+ * usage: querier pageDirectory indexFilename
+ *
+ * where: 
+ *
+ * output:
+ *
+ * functions:
+ *
+ * stdin: user input search queries
+ * stdout: query results
+ * stderr: error messages
  *
  * Robin Jayaswal, Kyle Dotterrer, May 2016
  *
@@ -53,7 +65,8 @@ static int lines_in_file(FILE *fp);
 static int numDigits(int number);
 static int arrayLength(char **array);
 static void hashDeleteFunc(void *data);
-static void signalHandler(int signum);
+static void checkPtr(void *ptr, char *loc);
+static void printResults(result_t **results, int numResults);
 
 
  int main(const int argc, char *argv[])
@@ -62,8 +75,6 @@ static void signalHandler(int signum);
  	int argStatus = parseArguments(argc, argv);
  	if (argStatus != 0)
  		exit(argStatus);
-
- 	signal(SIGINT, signalHandler);
 
  	// argument tests passed
  	char *pageDir = argv[1];
@@ -100,14 +111,11 @@ static void signalHandler(int signum);
 
  		counters_t *pageResults = performQuery(tokens, index);
  		
- 		counters_iterate(pageResults, printFunc, stdout);
  		int numResults = 0;
+
  		result_t **sortedResults = sortResults(pageResults, &numResults);
 
- 		for (int i = numResults-1; i >= 0; i--){
- 			printf("%d\n", sortedResults[i]->docID);
- 		}
-
+ 		printResults(sortedResults, numResults);
 
  		freeTokensArray(tokens);
  		counters_delete(pageResults);
@@ -498,7 +506,25 @@ static void hashDeleteFunc(void *data)
 	counters_delete(counters);
 }
 
-static void signalHandler(int signum)
+static void checkPtr(void *ptr, char *loc) 
 {
-	exit(99);
+	if (ptr == NULL) {
+		fprintf(stderr, "Error: unexpected NULL at %s\n", loc);
+		exit(99);
+	}
+}
+
+static void printResults(result_t **results, int numResults)
+{
+	if (numResults == 0) {
+ 		printf("No documents match.\n");
+ 	}
+ 	else {
+ 		printf("Matches %d documents (ranked):\n", numResults);
+
+ 		for (int i = numResults-1; i >= 0; i--){
+ 			printf("score: %3d  doc: %3d: \n", results[i]->score, results[i]->docID);
+ 		}
+ 	}
+ 	printf("----------------------------------------\n");
 }
