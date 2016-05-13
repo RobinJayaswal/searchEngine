@@ -45,7 +45,6 @@ typedef struct result {
 } result_t;
 
 /************* Function Prototypes *************/
-static void printFunc(void *arg, int key, int count);
 static counters_t *performQuery(char **tokens, hashtable_t *index);
 static counters_t *intersectCounters(counters_t *ctrs1, counters_t *ctrs2);
 static void intersectHelper(void *arg, int key, int count);
@@ -65,8 +64,8 @@ static int lines_in_file(FILE *fp);
 static int numDigits(int number);
 static int arrayLength(char **array);
 static void hashDeleteFunc(void *data);
-static void checkPtr(void *ptr, char *loc);
-static void printResults(result_t **results, int numResults);
+static void *checkPtr(void *ptr, char *loc);
+static void printResults(result_t **results, int numResults, char *pageDir);
 
 
  int main(const int argc, char *argv[])
@@ -102,6 +101,7 @@ static void printResults(result_t **results, int numResults);
  			free(query);
  			continue;
  		}
+ 		printf("Tokenize actually worked\n");
 
  		if (!validateQuery(tokens)) {
  			freeTokensArray(tokens);
@@ -109,13 +109,15 @@ static void printResults(result_t **results, int numResults);
  			continue;
  		}
 
+ 		printf("Validate query works\n");
+
  		counters_t *pageResults = performQuery(tokens, index);
  		
  		int numResults = 0;
 
  		result_t **sortedResults = sortResults(pageResults, &numResults);
 
- 		printResults(sortedResults, numResults);
+ 		printResults(sortedResults, numResults, pageDir);
 
  		freeTokensArray(tokens);
  		counters_delete(pageResults);
@@ -127,13 +129,6 @@ static void printResults(result_t **results, int numResults);
  	count_report(stdout, "Memory Allocation Report");
  	exit(0);
  }
-
- static void printFunc(void *arg, int key, int count)
- {
- 	FILE *fp = arg;
- 	fprintf(fp, "docID: %d count: %d\n", key, count);
- }
-
 
 static counters_t *performQuery(char **tokens, hashtable_t *index) 
 {
@@ -155,9 +150,11 @@ static counters_t *performQuery(char **tokens, hashtable_t *index)
 			else {
 				// find docs with that word, intersect with total andSequence counters
 				counters_t *currWordResults = hashtable_find(index, word);
+				printf("word: %s count in p7: %d\n", word, counters_get(currWordResults, 7));
 				andSequence = intersectCounters(andSequence, currWordResults);
 				i++;
 			}
+
 		}
 		unionCounters(finalResults, andSequence);
 		counters_delete(andSequence);
@@ -284,10 +281,16 @@ static char **tokenize(char *query)
  	
  	while( word != NULL) {
 
- 		if (++wordCount > arrLen) {
+ 		if (++wordCount >= arrLen) {
+ 			printf("Before Reallox: %s\n", tokens[1]);
+
  			arrLen = arrLen * 2;
- 			tokens = realloc(tokens, arrLen);
+ 			tokens = realloc(tokens, arrLen * sizeof(char*));
+ 			printf("After readline: %s\n", tokens[1]);
+ 			if (tokens[11] == NULL)
+ 				printf("tokens[11] is null\n");
  		}
+
  		for (int i = 0; i < strlen(word); i++) {
  			
  			if (isalpha(word[i]) == 0) {
@@ -315,6 +318,8 @@ static char **tokenize(char *query)
  	strcpy(tokens[0], arrLenStr);
  	count_free(arrLenStr);
 
+
+
  	// return pointer to first element of actual array
  	return ++tokens;
  }
@@ -322,7 +327,9 @@ static char **tokenize(char *query)
  static bool validateQuery(char **tokens) 
  {
  	int arrLen = arrayLength(tokens);
+ 	printf("Array len: %d\n", arrLen);
  	char *first = tokens[0];
+ 	printf("%s\n", first);
  	char *last = tokens[arrLen - 1];
 
  	if ( (strcmp(first, "and") == 0) || (strcmp(first, "or") == 0) ) {
@@ -506,15 +513,17 @@ static void hashDeleteFunc(void *data)
 	counters_delete(counters);
 }
 
-static void checkPtr(void *ptr, char *loc) 
+static void * checkPtr(void *ptr, char *loc) 
 {
 	if (ptr == NULL) {
 		fprintf(stderr, "Error: unexpected NULL at %s\n", loc);
 		exit(99);
 	}
+	else
+		return ptr;
 }
 
-static void printResults(result_t **results, int numResults)
+static void printResults(result_t **results, int numResults, char *pageDir)
 {
 	if (numResults == 0) {
  		printf("No documents match.\n");
@@ -523,7 +532,17 @@ static void printResults(result_t **results, int numResults)
  		printf("Matches %d documents (ranked):\n", numResults);
 
  		for (int i = numResults-1; i >= 0; i--){
- 			printf("score: %3d  doc: %3d: \n", results[i]->score, results[i]->docID);
+ 			char *fn = count_malloc(strlen(pageDir) + numDigits(results[i]->docID) + 2);
+ 			sprintf(fn, "%s/%d", pageDir, results[i]->docID);
+			FILE *fp = checkPtr(fopen(fn, "r"), "printResults. Would only happen "
+				"if pageDir and indexFN not corresponding");
+			char *url = readline(fp);
+ 			
+ 			printf("score: %4d  doc %4d: %s\n", results[i]->score, results[i]->docID, url);
+ 			count_free(fn);
+ 			fclose(fp);
+ 			free(url);
+ 			
  		}
  	}
  	printf("----------------------------------------\n");

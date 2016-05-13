@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "../lib/memory/memory.h"
 #include "../lib/hashtable/hashtable.h"
 #include "../lib/counters/counters.h"
@@ -72,6 +73,7 @@ int main(const int argc, char* argv[])
 	indexFN = argv[2];
 
 	hashtable_t *index = hashtable_new(HASHTABLE_SIZE, hashDeleteFunc);
+	
 	if (index == NULL) {
 		// check for allocation error
 		fprintf(stderr, "Error: failed to create index structure\n");
@@ -110,19 +112,13 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		char *html = file2string(fp);
 
 		int pos = 0;
-		int i = 0;   	
 		char *word;
 
-		// skip first two words (url & depth)
-		while ( i < 2 && ((pos = GetNextWord(html, pos, &word)) != -1) ) {
-			// loop over url and depth 'words'
-			i++;
-		}
-
 		// loop through words in html, normalize, update index
-		while ( (pos = GetNextWord(html, pos, &word)) != -1 ) {
+		while ( (pos = GetNextWord(html, pos, &word)) > 0 ) {
+			
 			char *normalized = NormalizeWord(word);
-
+			
 			if (strlen(normalized) > 2){
 
 				// variable NULL if word not found
