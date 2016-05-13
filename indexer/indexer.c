@@ -110,13 +110,24 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 	while ( (fp = fopen(fn, "r")) != NULL) {
 		// get files content into a string
 		char *html = file2string(fp);
-
+		char *htmlStart = html;
 		int pos = 0;
 		char *word;
 
+		int i;
+		int newlinesSeen = 0;
+		for (i = 0; i < strlen(html); i++){
+			if (html[0] == '\n'){
+				newlinesSeen++;
+				if (newlinesSeen == 2)
+					break;
+			}
+			html++;
+		}			
+
 		// loop through words in html, normalize, update index
 		while ( (pos = GetNextWord(html, pos, &word)) > 0 ) {
-			
+			printf("%s\n", word);
 			char *normalized = NormalizeWord(word);
 			
 			if (strlen(normalized) > 2){
@@ -139,6 +150,7 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 		// close file and free strings that will take new values
 		fclose(fp);
 
+		html = htmlStart;
 		free(html);
 		count_free(fn);
 
