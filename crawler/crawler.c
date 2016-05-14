@@ -127,7 +127,6 @@ int main(const int argc, char *argv[])
 		// extract the next page and save it to directory
 		bool saveSuccess = pagesave(nextPage, pageDirectory);
 
-
 		// if we are logging, alert user if writing to file encountered issue
 		if (!saveSuccess) {
 			#ifdef LOG	
@@ -149,10 +148,10 @@ int main(const int argc, char *argv[])
 	bag_delete(pageBag);
 	hashtable_delete(urlTable);
 
-#ifdef LOG
+	#ifdef LOG
 	// report memory allocations
 	count_report(stdout, "Memory Allocation Report");
-#endif
+	#endif
 
 	exit(0);
 }

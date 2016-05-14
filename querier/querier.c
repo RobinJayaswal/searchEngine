@@ -10,9 +10,42 @@
  *        .crawler is within the pageDirectory
  * 		> indexFilename is the name of the index file created by indexer
  *
- * output:
+ * output: querier searches the given index file for documents that satisfy
+ *         a user input query and prints these results to standard output
+ *         for the user to see. querier supports 'and' and 'or' operators
+ *         within the query; documents must have all query terms within an
+ *         andsequence to satisfy, and at least one of the terms in an 
+ *         orsequence to satisfy. 'and' takes precedence over 'or'. 
  *
- * functions:
+ * functions: functions in this file are divided into the categories:
+ * 
+ * 	Primary Functionality
+ *  	> tokenize: parse the query string into individual tokens
+ *  	> printQuery: print cleaned query for user to see
+ *  	> validateQuery: check if query has invlaid constructions
+ *  	> performQuery: search the index for satisfying documents
+ *  	> sortResults: sort the results returned by performing query
+ *  	> printResults: print the query results in human-readable format
+ *  Counters Helpers
+ *  	> intersectCounters: perform intersection on 2 counters structs
+ *  	> intersectHelper: iterator function for intersection
+ *  	> unionCounters: perform union on 2 counters structs
+ *  	> unionHelper: iterator function for union
+ *  	> countCounters: count the number of counters in counters struct
+ *  	> insertCounter: insert counter data into specified array as struct
+ *  Comparison Functions
+ *  	> resultCompare: comparison function for sorting results array
+ *  Memory Deallocation
+ *  	> freeTokensArray: deallocate array of query tokens
+ *  	> freeResults: deallocate array of results structs
+ *  Auxillary Functions
+ *  	> parseArguments: ensure command line args are valid 
+ *  	> isCrawlerDirectory: check for presence of .crawler in pageDir
+ *  	> linesInFile: count number of newlines in given file
+ *  	> numDigits: return number of digits in given integer
+ *  	> arrayLength: retrieve length or array stored at position 0
+ *  	> hashDeleteFunc: delete data from hashtable element
+ *  	> checkPtr: throw error and exit if bad pointer given
  *
  * stdin: user input search queries
  * stdout: query results
@@ -52,7 +85,7 @@ typedef struct result {
 
 /************ Primary Functionality *************/
 static char **tokenize(char *query);
-static void printQuery(char **tokens);
+static bool printQuery(char **tokens);
 static bool validateQuery(char **tokens);
 static counters_t *performQuery(char **tokens, hashtable_t *index);
 static result_t **sortResults(counters_t *results, int *numResults);
@@ -83,7 +116,9 @@ static void hashDeleteFunc(void *data);
 static void *checkPtr(void *ptr, char *loc);
 
 
-/************** main() ***************/
+/* ============================ Main ============================= */
+
+
 int main(const int argc, char *argv[])
 {
  	// parse arguments
@@ -112,12 +147,18 @@ int main(const int argc, char *argv[])
  	while ( (query = readline(stdin)) != NULL) {
 
  		char **tokens = tokenize(query);
+ 		// tokenize returns null if invalid chars in query
  		if (!tokens) {
  			free(query);
  			continue;
  		}
 
- 		printQuery(tokens);
+ 		// printQuery returns false if empty query given
+ 		if (!printQuery(tokens)) {
+ 			freeTokensArray(tokens);
+ 			free(query);
+ 			continue;
+ 		}
 
  		// validate query, checking for adjacent or beginning or ending 'and' and 'ors'
  		if (!validateQuery(tokens)) {
@@ -216,19 +257,24 @@ static char **tokenize(char *query)
 }
 
 /* printQuery: outputs the lowercased normalized query to stdout
- * Returns: void
+ * Returns: false if tokens array is empty, true otherwise
  */
-static void printQuery(char **tokens)
+static bool printQuery(char **tokens)
 {
 	int arrLen = arrayLength(tokens);
 
 	printf("query: ");
+	if (arrLen == 0) {
+		printf("(empty)\nNo documents match.\n");
+		printf("----------------------------------------\n");
+		return false;
+	}
 
 	for (int i = 0; i < arrLen; i++) {
-		printf(tokens[i]);
-		printf(" ");
+		printf("%s ", tokens[i]);
 	}
 	printf("\n");
+	return true;
 }
 
 /* validateQuery: check for validity of query. The words 'and' and 'or' may not 
@@ -245,10 +291,12 @@ static bool validateQuery(char **tokens)
 
  	if ( (strcmp(first, "and") == 0) || (strcmp(first, "or") == 0) ) {
  		fprintf(stderr, "Error: '%s' cannot be first\n", first);
+ 		printf("----------------------------------------\n");
  		return false;
  	} 
  	else if ( (strcmp(last, "and") == 0) || (strcmp(last, "or") == 0) ) {
  		fprintf(stderr, "Error: '%s' cannot be last\n", last);
+ 		printf("----------------------------------------\n");
  		return false;
  	}
 
@@ -263,6 +311,7 @@ static bool validateQuery(char **tokens)
  			if (prevWasOp) {	// two operators in a row
  				fprintf(stderr, "Error: '%s' and '%s' cannot be adjacent\n", 
  					tokens[i - 1], current);
+ 				printf("----------------------------------------\n");
  				return false;
  			}
 
@@ -351,21 +400,37 @@ static void printResults(result_t **results, int numResults, char *pageDir)
  	else {
  		printf("Matches %d documents (ranked):\n", numResults);
 
- 		for (int i = numResults-1; i >= 0; i--){
+ 		// find necessary column width for score
+ 		int maxScore = results[numResults - 1]->score;
+ 		int scoreDigits = numDigits(maxScore);
+
+ 		// find necessary column width for docID
+ 		int maxID = 0;
+ 		for (int i = numResults - 1; i >= 0; i--) {
+ 			if (results[i]->docID > maxID)
+ 				maxID = results[i]->docID;
+ 		}
+ 		int idDigits = numDigits(maxID);
+
+ 		// print all of the results to stdout
+ 		for (int i = numResults - 1; i >= 0; i--) {
  			// get filename and open file corresponding to result's docID
  			char *fn = count_malloc(strlen(pageDir) + numDigits(results[i]->docID) + 2);
  			sprintf(fn, "%s/%d", pageDir, results[i]->docID);
-			FILE *fp = checkPtr(fopen(fn, "r"), "printResults. Would only happen "
-				"if pageDir and indexFN not corresponding");
+
+			FILE *fp = checkPtr(fopen(fn, "r"), "Error: printResults. "
+												"pageDir and indexFN not corresponding");
 
 			// get URL of result
-			char *url = readline(fp);
+			char *url = checkPtr(readline(fp), "Error: printResults. "
+											   "page directory file empty");
  			
- 			printf("score: %4d  doc %4d: %s\n", results[i]->score, results[i]->docID, url);
+ 			printf("score: %*d ", scoreDigits, results[i]->score);
+ 			printf("doc %*d: %s\n", idDigits, results[i]->docID, url); 
+
  			count_free(fn);
  			fclose(fp);
  			free(url);
- 			
  		}
  	}
  	printf("----------------------------------------\n");
@@ -486,6 +551,7 @@ static int resultCompare(const void *a, const void *b)
 
 
 /* ==================== Memory Deallocation ====================== */
+
 
 /* freeResults: loop over results and free each result, then free results
  * Return: void

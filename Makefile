@@ -18,7 +18,7 @@ all:
 	$(MAKE) -C indexer
 	$(MAKE) -C querier
 
-# nondefault, logged output in crawler
+# nondefault, logged output in crawler, querier
 log: 
 	# build the libraries
 	$(MAKE) -C lib
@@ -27,7 +27,7 @@ log:
 	# build programs
 	$(MAKE) log -C crawler
 	$(MAKE) -C indexer
-	$(MAKE) -C querier
+	$(MAKE) log -C querier
 
 # recursively clean each subdirectory
 clean:

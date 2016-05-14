@@ -127,7 +127,6 @@ static void indexBuild(char *pageDir, hashtable_t *index)
 
 		// loop through words in html, normalize, update index
 		while ( (pos = GetNextWord(html, pos, &word)) > 0 ) {
-			printf("%s\n", word);
 			char *normalized = NormalizeWord(word);
 			
 			if (strlen(normalized) > 2){

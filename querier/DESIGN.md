@@ -344,14 +344,65 @@ There is no persistent storage associated with the program.
 
 ### **Testing Plan**
 
-*Unit Testing* Test programs for each of the modules is included in the respective
-files. These will all be run before integration.
+#### **Unit Testing** 
 
-*Integration Testing* Build the querier and test it's functionality. Carefully
-examine results printed to stdout, making sure the format is correct,
-and that the scores represented for results are correct (done by manually checking word counts of some words on some pages, and calculating score by hand).
+Test programs for each of the modules are included in their respective directories. These unit tests include: 
+    * listtest
+    * hashtabletest
+    * counterstest
+In addition to these specific test programs, we ran unit tests of each of the important components of _querier_ prior
+to integration. These components and their corresponding unit tests are as follows:
+    * tokenization: in order to unit test the tokenization component of our program, we wrote the ```tokenize()``` function
+    and printed its output before proceeding with the remainder of the program. We tested tokenize with both valid 
+    and invalid input queries, and checked that it behaved as expected. 
 
-1. Give various incorrect command line arguments. Incorrect number of arguments, 
-directory that is not a proper crawler directory.
+    * query validation: in order to unit test the query validation component of our program, we wrote the 
+    ```validateQuery()``` function and tested its output prior to proceeding with the remainder of the program. We input
+    both valid and invalid queries (in terms of operator placement) and checked that it behaved as expected. 
 
-2. 
+    * query performance: in order to test the component of our program that performs the query on the given array
+    of tokens, we wrote the function ```performQuery()``` and printed its output before proceeding with the remainder
+    of the program. This allowed us to test the functionality of many helper functions, such as the union and
+    intersection functions for counters objects. We ensured that the output from this function was as expected for
+    arbitrary queries before continuing.  
+
+    * result sorting: in order to test the component of our program that sorts results, we wrote the function 
+    ```sortResults()``` and checked its output before proceeding with the remainder of the program. We were able to 
+    deliver manually created arrays of results structs to this function, and ensure that it behaved as expected. 
+
+#### **Integration Testing**
+
+Build the querier and test it's functionality. There are three main categories of testing we will do:
+    * Argument Testing
+    * Functionality Testing
+    * Memory Testing
+
+For each of these, we will use one, or both, of two methods of testing
+    * Scripts
+    * Manual Testing
+
+Below is outlined the cases we will be testing in each of these categories.
+
+**Argument Testing:**
+    * Incorrect number of arguments
+    * Invalid page directory
+    * Invalid index filename
+
+**Functionality Testing:** 
+    * Empty query
+    * One or more invalid characters in query
+    * Invalid query syntax:
+        * 'and' operator first
+        * 'or' operator first
+        * 'and' operator last
+        * 'or' operator last
+        * 'and' and 'or' operators adjacent
+        * 'and' and 'and' operators adjacent
+        * 'or' and 'or' operators adjacent
+    * Manual examination of query results and corresponding webpages
+    * Fuzz testing with script
+
+**Memory Testing:**
+    * Manual tracking and examination of memory allocation and deallocation
+    * Automated memory testing using ```Valgrind```
+

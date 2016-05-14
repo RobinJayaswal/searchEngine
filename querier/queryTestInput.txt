@@ -1,0 +1,14 @@
+
+!bad character at start
+bad character at end?
+bad numeric 5 character
+and
+or
+and computer
+computer and
+or computer
+computer or
+computer and or science
+computer or and science
+computer and and science
+computer or or science
