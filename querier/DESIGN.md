@@ -101,41 +101,233 @@ The outline of the logic for querier is as follows:
 ### **Implementation Spec**
 
 **Function Prototypes**
-/************ Primary Functionality *************/
-static char **tokenize(char *query);
-static void printQuery(char **tokens);
-static bool validateQuery(char **tokens);
-static counters_t *performQuery(char **tokens, hashtable_t *index);
-static result_t **sortResults(counters_t *results, int *numResults);
-static void printResults(result_t **results, int numResults, char *pageDir);
 
-/************** Counters Helpers ***************/
-static counters_t *intersectCounters(counters_t *ctrs1, counters_t *ctrs2);
-static void intersectHelper(void *arg, int key, int count);
-static void unionCounters(counters_t *ctrs1, counters_t *ctrs2);
-static void unionHelper(void *arg, int key, int count);
-static void countCounters(void *arg, int key, int count);
-static void insertCounter(void *arg, int key, int count);
+_Primary Functionality_
+* static char **tokenize(char *query);
+* static void printQuery(char **tokens);
+* static bool validateQuery(char **tokens);
+* static counters_t *performQuery(char **tokens, hashtable_t *index);
+* static result_t **sortResults(counters_t *results, int *numResults);
+* static void printResults(result_t **results, int numResults, char *pageDir);
 
-/************ Comparison Functions *************/
-static int resultCompare(const void *a, const void *b);
 
-/************* Memory Deallocation **************/
-static void freeTokensArray(char **tokens);
-static void freeResults(result_t **results, int len);
+_Counters Helpers_
+* static counters_t *intersectCounters(counters_t *ctrs1, counters_t *ctrs2);
+* static void intersectHelper(void *arg, int key, int count);
+* static void unionCounters(counters_t *ctrs1, counters_t *ctrs2);
+* static void unionHelper(void *arg, int key, int count);
+* static void countCounters(void *arg, int key, int count);
+* static void insertCounter(void *arg, int key, int count);
 
-/************* Auxillary Functions **************/
-static int parseArguments(const int argc, char *argv[]);
-static bool isCrawlerDirectory(char *dir);
-static int linesInFile(char *fn);
-static int numDigits(int number);
-static int arrayLength(char **array);
-static void hashDeleteFunc(void *data);
-static void *checkPtr(void *ptr, char *loc);
+
+_Comparison Functions_
+* static int resultCompare(const void *a, const void *b);
+
+_Memory Deallocation_
+* static void freeTokensArray(char **tokens);
+* static void freeResults(result_t **results, int len);
+
+_Auxillary Functions_
+* static int parseArguments(const int argc, char *argv[]);
+* static bool isCrawlerDirectory(char *dir);
+* static int linesInFile(char *fn);
+* static int numDigits(int number);
+* static int arrayLength(char **array);
+* static void hashDeleteFunc(void *data);
+* static void *checkPtr(void *ptr, char *loc);
 
 **Pseudo code for the components**
+* *main(const int argc, char\* argv[])*
+    * if (parseArguments(argc, argv)) returns nonzero) { exit with error }
+    * else { continue with program }
+    * initialize index 
+    * load index from indexFile
+    * while (user does not input EOF command):
+        * tokenize the query
+        * print the clean query
+        * check the query for invalid constructions
+        * perform the query and return counters object representing results
+        * sort the results
+        * print the results
+    * clean up data structures 
+    * exit
+
+* *tokenize(char *query)*
+    * allocate space for array of string tokens
+    * use whitespace as delimeter
+    * while there are still more tokens in the string:
+        * if the number of words in tokens array will exceed current array size:
+            * reallocate more space for array
+        * for each character in the current word:
+            * if character is non alpha-numeric:
+                * print error message
+                * deallocate array
+                * exit function
+            * else: 
+                * make letter lowercase
+        * copy the cleaned word into tokens array
+    * allocate space for string representation of array length
+    * build string representation of array length
+    * store array length string at position 0 in tokens array
+    * free the original array length string
+    * exit
+    
+* *printQuery(char **tokens)*
+    * print "query " to stdout
+    * for each word in tokens array:
+        * print the word to stdout
+        * add a trailing space
+    * add a trailing newline
+    
+* *validateQuery(char **tokens)*
+    * get the tokens array length
+    * if first word in query is 'and' or 'or'
+        * print error message
+        * return false
+    * else if last word in query is 'and' or 'or'
+        * print error message
+        * return false
+    * for every word in tokens array:
+        * if current word is 'and' or 'or'
+            * if previous word was 'and' or 'or'
+                * return false
+            * else mark current word as operator
+        * else mark current word as non-operator
+    * return true
+    
+* *performQuery(char **tokens, hashtable_t *index)*
+    * get array length from first position of tokens array
+    * initialize new counters for final results
+    * for every word in the tokens array:
+        * initialize an _andsequence_ with that word
+        * while we are still within bounds of array and 'or' is not seen:
+            * if 'and' is seen
+                * increment one position forward in array
+            * else:
+                * find docs with current word
+                * intersect current _andsequence_ with results for new word
+                * increment one position forward in array
+        * union the _andsequence_ with the current final results
+        * delete the _andsequence_
+        * increment one position forward in array
+    * return results
+   
+* *sortResults(counters_t *results, int numResults)*
+    * iterate over results to count the number of results
+    * allocate memory for new array of pointers to results structs
+    * iterate over results, inserting new results struct into array for each counter seen
+    * sort the results array
+    * return the sorted array
+    
+* *printResults(result_t **sorted, int numResults, char *pageDir)*
+    * if number of results is 0
+        * print "no documents match"
+    * else:
+        * print results header with number of satisfying documents
+        * for each result in the sorted array of results:
+            * allocate space for filename of result's page
+            * build the filename from page directory and doc ID
+            * open the file corresponding to current result
+            * read the result's url into variable
+            * print the score, document, and url information
+            * free the filename
+            * close the file
+            * free the built url
+        * print individual query footer to mark end of results
 
 **Pseudo code for the functions**
+
+* *inserectCounters(counters_t *ctrs1, counters_t *ctrs2)*
+    * create new counters object to represent intersection
+    * allocate space for new countersPair struct
+    * fill countersPair with empty itersection and ctrs2
+    * iterate over ctrs1, intersecting both original counters into new intersection
+    * free the pair structure
+    * return result of intersection
+    
+* *intersectHelper(void *arg, int key, int count)*
+    * cast argument to counters type
+    * get the key from ctrs2
+    * if the current key in ctrs1 is also in ctrs2:
+        * sum the counts and add sum to insection with key
+        
+* *unionCounters(counters_t *ctrs1, counters_t *ctrs2)*
+    * iterate over ctrs2, unioning in place with ctrs1
+
+* *unionHelper(void *arg, int key, int count)*
+    * cast argument to counters type
+    * calculate sum of current count from ctrs2 and ctrs1
+    * set the value of current key in ctrs1 to sum
+    
+* *countCounters(void *arg, int key, int count)*
+    * cast argument to integer
+    * increment the argument by 1
+    
+* *insertCounter(void *arg, int key, int count)*
+    * initialize static variable index = 0
+    * cast argument to results array
+    * allocate space for new result entry
+    * set the key and value of struct to current counter key and value
+    * insert the pointer to new struct into results array
+    * increment static index variable
+    
+* *freeTokensArray(char **tokens)*
+    * get array length from position 0 of tokens array
+    * for every element in the array:
+        * if the element is not a null pointers:
+            * free the element
+    * free the length of tokens array stored at position 0
+    * free the entire tokens aray
+    
+* *freeResults(result_t **results, int len)*
+    * for every element in results array:
+        * if the pointer is not null:
+            * free the element
+    * free the entire array
+    
+* *parseArguments(const int argc, char *argv[])*
+    * if number of command line arguments is not 3:
+        * print error message
+        * return nonzero status
+    * if pageDirectory is not crawler directory:
+        * print error message
+        * return nonzero status
+    * if index file is invalid or unreadable:
+        * print error message
+        * return nonzero status
+    * return 0 status
+    
+* *isCrawlerDirectory(char *dir)*
+    * allocate space for the filename
+    * build filename string from page directory and '.crawler'
+    * if fail to open '.crawler' file in page directory
+        * return false
+    * else:
+        * return true
+        
+* *linesInFile(char *fn)*
+    * open the file 
+    * rewind file pointer to beginning of file
+    * initialize number of newlines seen to 0
+    * while EOF is not reached:
+        * if newline is seen:
+            * increment number of newlines
+    * return number of newlines seen
+    
+* *numDigits(int number)*
+    * if number is 1 digit:
+        * return 1
+    * else:
+        * recursively call numDigits, adding 1 to result and dividing number by 10
+        
+* *arrayLength(char **array)*
+    * get length string from first position in array
+    * cast string to long integer representation
+    * return integer representation
+    
+* *hashDeleteFunc(void *data)*
+    * cast data argument to counters type
+    * call counters delete to delete entire data structure
 
 **Data Structures**
 1. Hashtable of lists of counters, (word, counters) as (key, value)
