@@ -5,7 +5,7 @@
 # word count ranges from 0 to 100
 # words are pulled from unix dictionary
 
-NUM_QUERIES=500
+NUM_QUERIES=100
 
 if [ $# != 2 ]; then
     echo usage: querierFuzzTest pageDirectory indexFilename
@@ -32,17 +32,18 @@ do
 	do
 		let rand=$(($RANDOM % 10))
 		if [ $rand -le 2 ]; then
-			echo "and" >> "$tmpQueries"
+			printf "%s" "and " >> "$tmpQueries"
 		elif [ $rand -le 2 ]; then
-			echo "or" >> "$tmpQueries"
+			printf "%s" "or " >> "$tmpQueries"
 		else
 			n=$(cat /usr/share/dict/words | wc -l)
-			numline=$(($RANDOM))
+			numline=$((($RANDOM * $RANDOM) % n))
 			word=$(cat -n /usr/share/dict/words | grep -w "^\s*$numline" | cut -f2)
-			echo $word >> "$tmpQueries"
+			printf "%s" "$word " >> "$tmpQueries"
 		fi
 		let "currWC++"
 	done
+	echo >> "$tmpQueries"
 	let "count++"
 done
 
@@ -50,9 +51,7 @@ done
 
 
 if [ $? != 0 ]; then
-	rm -f "$tmpQueries"
 	echo "Error in Fuzz Test"
 else
-	rm -f "$tmpQueries"
 	echo "Queries were successful"
 fi
