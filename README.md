@@ -8,12 +8,21 @@ internal to the Dartmouth CS Department server.
 
 ### **Compilation**
 Compilation of all three project subsystems can be completed simultaneous by
-a single call to _make_ in the top-level tse/ directory. Here, _make_ also has
+a single call to ``` make ``` in the top-level tse/ directory. Here, ``` make ``` also has
 the effect of building the _cs50ds_ and _common_ libraries utilized by all three
-of the subsystems. 
+of the subsystems. Additionally, logged output processes can be added to 
+both the crawler and querier subsystems by calling ``` make log ``` from the tse/
+directory.  
 
-The subsystems may also be compiled individually by calling_make_ in each 
+The subsystems may also be compiled individually by calling ``` make ``` in each 
 of their respective subdirectories. 
+
+Alternatively, the script ``` tse.sh ```, located in the tse/ directory, can be
+called with the usage syntax:
+``` tse.sh seedUrl maxDepth ```
+This script compiles all necessary components of TSE, crawls from the seedURL to
+the given maxDepth, indexes the pages created during the crawling process, enters
+the querier, and cleans up all files created during this process. 
 
 ### **Subsystems**
 
