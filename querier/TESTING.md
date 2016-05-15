@@ -5,7 +5,9 @@
 
 #### Automated Argument Testing
 
-```querierArgTest.sh```
+We wrote a script ``` querierArgTest.sh ``` to test our program's ability to 
+handle invalid command line arguments. The console output below shows the result
+of running the script within the querier/ subdirectory. 
 
 ```
 [kad@flume ~/cs50/labs/tse/querier]$ ./querierArgTest.sh ../data/crawl1 ../data/index1
@@ -56,7 +58,11 @@ All Tests PASSED
 
 #### Automated Query Syntax Testing
 
-```queryTest.sh```
+We wrote a script ``` queryTest.sh ``` to test our program's ability to parse
+user input queries and properly handle those that are invalid. Invalid queries
+include both those that include illegal (non-alpha) characters and those with
+improper operator ('and' or 'or') usage. The console output below shows the result
+of running the script within the querier/ subdirectory.
 
 ```
 [kad@flume ~/cs50/labs/tse/querier]$ ./queryTest.sh
@@ -102,9 +108,34 @@ error status at exit is 0
 
 #### Manual General Functionality Testing
 
-dartmouth = 147
-computer = 189
+We manually tested our querier's ability to properly calculate the score for 
+a given query. The console ouput below shows that we queried the individual
+words separately, and then considered the _andsequence_ containing both words.
+The output shows that our querier properly computes the intersection; 
+the score for an _andsequence_ is the minimum of the individual scores. 
 ```
+[kad@flume ~/cs50/labs/tse/querier]$ querier ../data/crawl1 ../data/index1
+computer
+query: computer 
+Matches 6 documents (ranked):
+score: 187 doc 7: http://old-www.cs.dartmouth.edu/~dfk/papers/index.html
+score:  14 doc 5: http://old-www.cs.dartmouth.edu/~dfk/teaching.html
+score:   5 doc 4: http://old-www.cs.dartmouth.edu/~dfk/postdoc.html
+score:   3 doc 6: http://old-www.cs.dartmouth.edu/~dfk/people.html
+score:   3 doc 1: http://old-www.cs.dartmouth.edu/~dfk/
+score:   1 doc 9: http://old-www.cs.dartmouth.edu/
+----------------------------------------
+dartmouth
+query: dartmouth 
+Matches 6 documents (ranked):
+score: 147 doc  7: http://old-www.cs.dartmouth.edu/~dfk/papers/index.html
+score:   5 doc 10: http://old-www.cs.dartmouth.edu/~dfk/ChampionInternationalProfessor.html
+score:   5 doc  4: http://old-www.cs.dartmouth.edu/~dfk/postdoc.html
+score:   4 doc  1: http://old-www.cs.dartmouth.edu/~dfk/
+score:   3 doc  9: http://old-www.cs.dartmouth.edu/
+score:   3 doc  6: http://old-www.cs.dartmouth.edu/~dfk/people.html
+----------------------------------------
+
 [kad@flume ~/cs50/labs/tse/querier]$ querier ../data/crawl1 ../data/index1
 computer and dartmouth
 query: computer and dartmouth 
@@ -116,7 +147,10 @@ score:   3 doc 6: http://old-www.cs.dartmouth.edu/~dfk/people.html
 score:   1 doc 9: http://old-www.cs.dartmouth.edu/
 ----------------------------------------
 ```
-
+We also tested our querier's ability to properly handle scoring disjunctions 
+('or' operations). The console output below shows that the resulting score from
+combining the previously calculated _andsequence_ and the new _andsequence_ is 
+the sum of the score of the individual _andsequences_. 
 ```
 kotz
 query: kotz 
@@ -150,7 +184,10 @@ score:   1 doc  2: http://old-www.cs.dartmouth.edu/~dfk/seatpack/
 
 #### Automated General Functionality Testing
 
-```querierFuzzTest.sh```
+We wrote a script ``` querierFuzzTest.sh ``` to test our querier's ability to
+handle a wide variety of inputs. The console output below shows that randomly 
+generated queries of various lengths and structures are properly handled by our 
+program.
 
 ```
 [kad@flume ~/cs50/labs/tse/querier]$ ./querierFuzzTest.sh ../data/crawl1 ../data/index1
@@ -372,6 +409,10 @@ Queries were successful
 
 #### Manual Memory Allocation/Deallocation Testing
 
+We utilized the ```memory``` module provided by David Kotz to manually check that
+our memory allocations and deallocations correspond. The console output below 
+shows the memory allocation report at the end of the program, following several 
+queries. 
 ```
 [kad@flume ~/cs50/labs/tse/querier]$ querier ../data/crawl1 ../data/index1
 computer            
@@ -414,7 +455,9 @@ Memory Allocation Report: 71 malloc, 71 free, 0 free(NULL), 0 net
 
 #### Automated Memory Allocation/Deallocation Testing
 
-```valgrind --leak-check=full --show-leak-kinds=all```
+We utilized valgrind to check for memory leaks.
+Valgrind was aliased with the following flags:
+``` valgrind --leak-check=full --show-leak-kinds=all ```
 
 ```
 [kad@flume ~/cs50/labs/tse/querier]$ valgrind querier ../data/crawl1 ../data/index1
