@@ -8,7 +8,7 @@ The TSE querier is a standalone program that reads the index file produced by th
 The querier **shall**:
 
 1. execute from a command line with usage syntax 
-	* ```./querier pageDirectory indexFilename```
+	* ``` ./querier pageDirectory indexFilename ```
 	* where ```pageDirectory``` is a directory produced by the crawler, and
 	* where ```indexFilename``` is an index file produced by the indexer.
 
@@ -23,12 +23,12 @@ The querier **shall**:
 
 The querier **shall** validate its command-line arguments:
 
-* ```pageDirectory``` is a directory produced by the crawler, and
-* ```indexFilename``` is the name of a readable file.
+* ``` pageDirectory ``` is a directory produced by the crawler, and
+* ``` indexFilename ``` is the name of a readable file.
 
 The querier may **assume** that the input directory and files follow the designated formats.
 
-* ```pageDirectory``` has files named 1, 2, 3, …, without gaps.
+* ``` pageDirectory ``` has files named 1, 2, 3, …, without gaps.
 * The content of document files in ```pageDirectory``` follow the format as defined in the crawler specs; thus your code (to read a document file) need not have extensive error checking.
 * The content of the file named by ```indexFilename``` follows our Index file format; thus your code (to recreate an index structure by reading a file) need not have extensive error checking.
 
@@ -39,7 +39,7 @@ The querier may **assume** that the input directory and files follow the designa
 The querier takes a pageDirectory and an indexFilename to respond to user-input queries.
 An example of the command-line interface is:
 
-```./querier pageDirectory indexFilename```
+``` ./querier pageDirectory indexFilename ```
 
 **Inputs and Outputs**
 
@@ -61,7 +61,7 @@ Helper Modules:
 
 The outline of the logic for querier is as follows:
 1. Execute from a command line with usage syntax
-    * ```./querier pageDirectory indexFilename```
+    * ``` ./querier pageDirectory indexFilename ```
     * where pageDirectory is directory of webpage files
     * where indexFilename is an existing index file
 2. Parse command line, validate parameters, and initalize other modules
@@ -110,7 +110,6 @@ _Primary Functionality_
 * static result_t **sortResults(counters_t *results, int *numResults);
 * static void printResults(result_t **results, int numResults, char *pageDir);
 
-
 _Counters Helpers_
 * static counters_t *intersectCounters(counters_t *ctrs1, counters_t *ctrs2);
 * static void intersectHelper(void *arg, int key, int count);
@@ -118,7 +117,6 @@ _Counters Helpers_
 * static void unionHelper(void *arg, int key, int count);
 * static void countCounters(void *arg, int key, int count);
 * static void insertCounter(void *arg, int key, int count);
-
 
 _Comparison Functions_
 * static int resultCompare(const void *a, const void *b);
@@ -346,49 +344,58 @@ There is no persistent storage associated with the program.
 
 #### **Unit Testing** 
 
-Test programs for each of the modules are included in their respective directories. These unit tests include: 
+Test programs for each of the modules are included in their respective directories. 
+These unit tests include:
+
     * listtest
     * hashtabletest
     * counterstest
-In addition to these specific test programs, we ran unit tests of each of the important components of _querier_ prior
-to integration. These components and their corresponding unit tests are as follows:
-    * tokenization: in order to unit test the tokenization component of our program, we wrote the ```tokenize()``` function
+    
+In addition to these specific test programs, we ran unit tests of each of the 
+important components of _querier_ prior to integration. These components and 
+their corresponding unit tests are as follows:
+
+    * tokenization: in order to unit test the tokenization component of our program, we wrote the _tokenize()_ function
     and printed its output before proceeding with the remainder of the program. We tested tokenize with both valid 
     and invalid input queries, and checked that it behaved as expected. 
 
     * query validation: in order to unit test the query validation component of our program, we wrote the 
-    ```validateQuery()``` function and tested its output prior to proceeding with the remainder of the program. We input
+    _validateQuery()_ function and tested its output prior to proceeding with the remainder of the program. We input
     both valid and invalid queries (in terms of operator placement) and checked that it behaved as expected. 
 
     * query performance: in order to test the component of our program that performs the query on the given array
-    of tokens, we wrote the function ```performQuery()``` and printed its output before proceeding with the remainder
+    of tokens, we wrote the function _performQuery()_ and printed its output before proceeding with the remainder
     of the program. This allowed us to test the functionality of many helper functions, such as the union and
     intersection functions for counters objects. We ensured that the output from this function was as expected for
     arbitrary queries before continuing.  
 
     * result sorting: in order to test the component of our program that sorts results, we wrote the function 
-    ```sortResults()``` and checked its output before proceeding with the remainder of the program. We were able to 
+    _sortResults()_ and checked its output before proceeding with the remainder of the program. We were able to 
     deliver manually created arrays of results structs to this function, and ensure that it behaved as expected. 
 
 #### **Integration Testing**
 
 Build the querier and test it's functionality. There are three main categories of testing we will do:
+
     * Argument Testing
     * Functionality Testing
     * Memory Testing
 
 For each of these, we will use one, or both, of two methods of testing
+
     * Scripts
     * Manual Testing
 
 Below is outlined the cases we will be testing in each of these categories.
 
 **Argument Testing:**
+
     * Incorrect number of arguments
     * Invalid page directory
     * Invalid index filename
 
 **Functionality Testing:** 
+
     * Empty query
     * One or more invalid characters in query
     * Invalid query syntax:
@@ -403,6 +410,7 @@ Below is outlined the cases we will be testing in each of these categories.
     * Fuzz testing with script
 
 **Memory Testing:**
+
     * Manual tracking and examination of memory allocation and deallocation
     * Automated memory testing using ```Valgrind```
 
