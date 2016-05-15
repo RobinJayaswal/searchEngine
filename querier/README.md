@@ -8,13 +8,13 @@ Querier is a subsystem of TSE.
 Within the querier/ subdirectory of TSE, the querier program
 can be compiled with a single command: 
 
-```make```
+``` make ```
 
 Additionally, we implement memory allocation and deallocation
 trackign throughout our program. The results of this tracking can 
 be displayed by way of an alternate compilation process invoked by the command:
 
-```make log```
+``` make log ```
 
 The equivalent commands issued from the top level (tse/) directory 
 build all three subsystems (with or without logged process output) 
@@ -22,7 +22,7 @@ as well as the necessary libraries.
 
 ### **Usage**
 Querier is executed with the syntax:
-```querier pageDirectory indexFilename```
+``` querier pageDirectory indexFilename ```
 
 Where:
 * pageDirectory is the path to a directory containing valid text files
