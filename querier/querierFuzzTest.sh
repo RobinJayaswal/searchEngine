@@ -25,7 +25,6 @@ count=1
 while [ $count -le $NUM_QUERIES ]
 do
 	let wordCount=$(($RANDOM % 25))
-	echo $count
 	currWC=1
 
 	while [ $currWC -le $wordCount ]
